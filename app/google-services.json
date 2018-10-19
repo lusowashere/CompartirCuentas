@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "860441385033",
+    "firebase_url": "https://cuentas-a9b09.firebaseio.com",
+    "project_id": "cuentas-a9b09",
+    "storage_bucket": "cuentas-a9b09.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860441385033:android:8d4ac11150e9aef4",
+        "android_client_info": {
+          "package_name": "com.example.lusog.compartircuentas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "860441385033-ta314dn1t9nnn46smgj9felhjfi7p459.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lusog.compartircuentas",
+            "certificate_hash": "cb1632a3fe2f76b70c19501cf90448e782457282"
+          }
+        },
+        {
+          "client_id": "860441385033-jhfhm557p7a3vue3ksvq9q0fomo4n5iu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpQvFWFG5MHq95IlY1W1ljM15Ggh_KXf0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "860441385033-jhfhm557p7a3vue3ksvq9q0fomo4n5iu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
