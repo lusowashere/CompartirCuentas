@@ -1,5 +1,6 @@
 package com.example.lusog.compartircuentas;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,7 +30,7 @@ public class detalles_cuenta extends AppCompatActivity {
         esNuevaCuenta=intento.getBooleanExtra("esNuevaCuenta",false);
 
 
-        TextView texto=(TextView) findViewById(R.id.textView2);
+        TextView texto=(TextView) findViewById(R.id.labelCabecera);
         Button botonSalida=(Button) findViewById(R.id.buttExit);
 
         database=FirebaseDatabase.getInstance();
@@ -46,8 +47,39 @@ public class detalles_cuenta extends AppCompatActivity {
     }
 
 
+    public void abrirListaNombres(View view){
+        Intent intentoListaDeNombres=new Intent(this,listaNombres.class);
+        intentoListaDeNombres.putExtra("stringListaNombres",cuentaActual.getListaUnicoString());
+        startActivityForResult(intentoListaDeNombres,1);
 
 
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode==1 && resultCode== Activity.RESULT_OK){
+            TextView nombres=(TextView) findViewById(R.id.textoListaParticipantes);
+            String stringDevuelto=data.getStringExtra("stringListaNombres");
+
+            String texto2="";
+            int i=0;
+            for(String n:stringDevuelto.split(";")){
+                if(i>0){
+                    texto2+="\n";
+                }
+                texto2+=n;
+                i++;
+            }
+            nombres.setText(texto2);
+
+            cuentaActual.setListaFromUnicoString(stringDevuelto);
+
+        }
+
+    }
 
     public void BotonSalida_Click(View view){
 
@@ -56,8 +88,10 @@ public class detalles_cuenta extends AppCompatActivity {
         cuentaActual.titulo=txtboxTitulo.getText().toString();
 
         if (esNuevaCuenta){
-
+            //creo la cuenta en firebase
             myRef.child(Long.toString(cuentaActual.id)).child("id").setValue(Long.toString(cuentaActual.id));
+
+
 
         }
 

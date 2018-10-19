@@ -18,17 +18,22 @@
         </activity>
         <activity
             android:name=".resumen_cuenta"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".MainActivity"
+            >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-        <activity android:name=".detalles_cuenta"
-            android:parentActivityName=".MainActivity">
+        <activity
+            android:name=".detalles_cuenta"
+            android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVIY"
-                android:value=".MainActivity"/>
+                android:value=".MainActivity" />
         </activity>
+        <activity android:name=".listaNombres"
+            android:windowSoftInputMode="stateHidden"></activity>
     </application>
 
 </manifest>
