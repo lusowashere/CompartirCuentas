@@ -68,11 +68,12 @@ class Cuenta {
 
         for(String n:listaNombres){
             if(i>0){
-                str+= "|";
+                str+= ";";
             }
             str+=n;
             i++;
         }
+
 
         return str;
     }
@@ -80,7 +81,7 @@ class Cuenta {
 
     public void setListaFromUnicoString(String strFirebase){
         String[] arrayNombres;
-        arrayNombres=strFirebase.split("|");
+        arrayNombres=strFirebase.split(";");
 
         listaNombres.clear();
 

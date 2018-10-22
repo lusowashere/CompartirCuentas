@@ -66,7 +66,8 @@ public class detalles_cuenta extends AppCompatActivity {
 
             String texto2="";
             int i=0;
-            for(String n:stringDevuelto.split(";")){
+            String[] arrayTexto=stringDevuelto.split(";");
+            for(String n:arrayTexto){
                 if(i>0){
                     texto2+="\n";
                 }
@@ -77,6 +78,8 @@ public class detalles_cuenta extends AppCompatActivity {
 
             cuentaActual.setListaFromUnicoString(stringDevuelto);
 
+        }else{
+            Log.e("mensaje","fallo");
         }
 
     }
@@ -84,6 +87,7 @@ public class detalles_cuenta extends AppCompatActivity {
     public void BotonSalida_Click(View view){
 
         EditText txtboxTitulo=(EditText) findViewById(R.id.txtBoxTitulo);
+        //EditText txtboxDescripcion=(EditText)
 
         cuentaActual.titulo=txtboxTitulo.getText().toString();
 
@@ -97,6 +101,8 @@ public class detalles_cuenta extends AppCompatActivity {
 
         myRef.child(Long.toString(cuentaActual.id)).child("titulo").setValue(cuentaActual.titulo);
         myRef.child(Long.toString(cuentaActual.id)).child("descripcion").setValue(cuentaActual.descripcion);
+        myRef.child(Long.toString(cuentaActual.id)).child("participantes").setValue(cuentaActual.getListaUnicoString());
+
 
     }
 

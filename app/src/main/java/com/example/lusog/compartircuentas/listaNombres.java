@@ -1,12 +1,15 @@
 package com.example.lusog.compartircuentas;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -30,8 +33,11 @@ public class listaNombres extends AppCompatActivity {
         Intent intento=getIntent();
         stringNombres=intento.getStringExtra("stringListaNombres");
 
+        Log.e("stringListaNombres","\""+stringNombres+"\"");
+
         nombres=new ArrayList<>();
-        if(stringNombres!=""){
+        if( !stringNombres.equals("")){
+            Log.e("stringListaNombres","he entrado en el if");
             for(String n:stringNombres.split(";")){
                 nombres.add(n);
             }
@@ -50,13 +56,45 @@ public class listaNombres extends AppCompatActivity {
         lista.setAdapter(null);
         lista.setAdapter(adaptador_de_array);
 
+        lista.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                AlertDialog.Builder alerta=new AlertDialog.Builder(listaNombres.this);
+                alerta.setTitle("eliminar");
+                alerta.setMessage("¿Desea eliminar el nombre \""+nombres.get(position)+"\"?");
+
+                alerta.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+
+                alerta.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        nombres.remove(position);
+                        dialog.dismiss();
+                        refreshLista();
+                    }
+                });
+
+
+                AlertDialog aaa=alerta.create();
+                aaa.show();
+
+                return false;
+            }
+        });
+
     }
 
     public void addNombreAlista(View view){
         String nuevoNombre;
         EditText txtbox=(EditText) findViewById(R.id.txtBoxNuevoParticipante);
 
-        nuevoNombre=txtbox.getText().toString();
+        nuevoNombre= txtbox.getText().toString().trim();
 
         if(nuevoNombre!=""){
 
@@ -90,13 +128,15 @@ public class listaNombres extends AppCompatActivity {
         String ristra="";
         int i=0;
 
-        for(String n:nombres){
+        for(String nomb:nombres){
             if(i>0){
                 ristra+=";";
             }
-            ristra+=n;
+            ristra+=nomb;
             i++;
         }
+
+        Log.e("stringListaNombres","vuelta:\""+ristra+"\"");
 
         Intent returnIntent=new Intent();
         returnIntent.putExtra("stringListaNombres",ristra);
