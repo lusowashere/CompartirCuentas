@@ -72,16 +72,18 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             Long id;
-                            String titulo, descripcion;
+                            String titulo, descripcion, ristraNombres;
                             Double importeTotal;
 
                             id = (Long) Long.parseLong(dataSnapshot.child("id").getValue().toString());
                             titulo = (String) dataSnapshot.child("titulo").getValue();
                             descripcion = (String) dataSnapshot.child("descripcion").getValue();
                             importeTotal = (Double) Double.parseDouble(dataSnapshot.child("importeTotal").getValue().toString());
+                            ristraNombres = (String) dataSnapshot.child("participantes").getValue();
 
                             Cuenta nuevaCuenta = new Cuenta(id, titulo, descripcion);
                             nuevaCuenta.importeTotal = importeTotal;
+                            nuevaCuenta.setListaFromUnicoString(ristraNombres);
 
                             listaCuentasUsuario.add(nuevaCuenta);
 
@@ -110,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
     public void actualizarRecyclerView(){
         recicler.setLayoutManager(new LinearLayoutManager(this));
 
-        adaptadorCuentas adapter=new adaptadorCuentas(listaCuentasUsuario);
+        adaptadorCuentas adapter=new adaptadorCuentas(listaCuentasUsuario,getApplicationContext());
         recicler.setAdapter(adapter);
 
     }
