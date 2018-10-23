@@ -96,14 +96,14 @@ public class listaNombres extends AppCompatActivity {
 
         nuevoNombre= txtbox.getText().toString().trim();
 
-        if(nuevoNombre!=""){
+        if(nuevoNombre!="" || !nuevoNombre.equals("")){
 
             //compruebo que no está repetido
             boolean repetido=false;
 
             for(String nombre:nombres){
-                if(nombre==nuevoNombre){
-                    repetido=false;
+                if(nombre==nuevoNombre || nombre.equals(nuevoNombre)){
+                    repetido=true;
                 }
             }
 
@@ -136,7 +136,7 @@ public class listaNombres extends AppCompatActivity {
             i++;
         }
 
-        Log.e("stringListaNombres","vuelta:\""+ristra+"\"");
+        //Log.e("stringListaNombres","vuelta:\""+ristra+"\"");
 
         Intent returnIntent=new Intent();
         returnIntent.putExtra("stringListaNombres",ristra);

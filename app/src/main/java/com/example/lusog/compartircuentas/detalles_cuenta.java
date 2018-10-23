@@ -91,10 +91,20 @@ public class detalles_cuenta extends AppCompatActivity {
 
         cuentaActual.titulo=txtboxTitulo.getText().toString();
 
+
+        Intent returnIntent=new Intent();
+
         if (esNuevaCuenta){
             //creo la cuenta en firebase
             myRef.child(Long.toString(cuentaActual.id)).child("id").setValue(Long.toString(cuentaActual.id));
 
+            myRef.child(Long.toString(cuentaActual.id)).child("importeTotal").setValue(0);
+
+            returnIntent.putExtra("addCuenta",true);
+            returnIntent.putExtra("idCuenta",cuentaActual.id);
+
+        }else {
+            returnIntent.putExtra("addCuenta",false);
 
 
         }
@@ -103,7 +113,11 @@ public class detalles_cuenta extends AppCompatActivity {
         myRef.child(Long.toString(cuentaActual.id)).child("descripcion").setValue(cuentaActual.descripcion);
         myRef.child(Long.toString(cuentaActual.id)).child("participantes").setValue(cuentaActual.getListaUnicoString());
 
+        setResult(Activity.RESULT_OK,returnIntent);
+        finish();
 
     }
+
+
 
 }

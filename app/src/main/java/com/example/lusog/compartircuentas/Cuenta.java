@@ -10,13 +10,15 @@ class Cuenta {
     public ArrayList<String> listaNombres;
     public long id;
     public String titulo, descripcion;
-    public List<Movimiento> movimientosCuenta;
+    public ArrayList<Movimiento> movimientosCuenta;
+    public double importeTotal;
 
     public Cuenta(long id, String titulo, String descripcion){
         this.id=id;
         this.titulo=titulo;
         this.descripcion=descripcion;
         listaNombres=new ArrayList<>();
+        movimientosCuenta=new ArrayList<>();
     }
 
     public Cuenta(String titulo,String descripcion){
@@ -25,12 +27,26 @@ class Cuenta {
         id=crearIdConFecha();
         listaNombres=new ArrayList<>();
 
+        movimientosCuenta=new ArrayList<>();
+
     }
 
     public Cuenta(){
         id=crearIdConFecha();
         listaNombres=new ArrayList<>();
+
+        movimientosCuenta=new ArrayList<>();
     }
+
+    public void calcularImporteTotal(){
+        importeTotal=0;
+        for(Movimiento mov:movimientosCuenta){
+            importeTotal+=mov.cantidad;
+        }
+
+        //aquí faltaría guardarlo en firebase
+    }
+
 
     public long crearIdConFecha(){
         long idPropuesto;
