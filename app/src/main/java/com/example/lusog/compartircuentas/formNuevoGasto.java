@@ -1,5 +1,6 @@
 package com.example.lusog.compartircuentas;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
@@ -119,7 +120,14 @@ public class formNuevoGasto extends AppCompatActivity {
 
                     myRef.child(Long.toString(numeroCuenta)).child("movimientos").child(idMovimiento).setValue(nuevoMovimiento);
 
+                    recalcularYguardarImporteTotal();
+
                     dialog.dismiss();
+
+                    Intent returnIntent=new Intent();
+
+                    setResult(Activity.RESULT_OK, returnIntent);
+
                     finish();
                 }
             });
@@ -139,6 +147,14 @@ public class formNuevoGasto extends AppCompatActivity {
 
         alerta.create().show();
 
+    }//fin de la función finCrearElemento
+
+
+    public void recalcularYguardarImporteTotal(){
+        Cuenta cuentaTemp=new Cuenta(numeroCuenta);
+
+        cuentaTemp.calcularImporteTotal();
+        //cuentaTemp.guardarImporteTotal();
     }
 
 

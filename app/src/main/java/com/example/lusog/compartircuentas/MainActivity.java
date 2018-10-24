@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
                             titulo = (String) dataSnapshot.child("titulo").getValue();
                             descripcion = (String) dataSnapshot.child("descripcion").getValue();
                             importeTotal = (Double) Double.parseDouble(dataSnapshot.child("importeTotal").getValue().toString());
+                            Log.e("mensaje","importe total:"+importeTotal+"€");
                             ristraNombres = (String) dataSnapshot.child("participantes").getValue();
 
                             Cuenta nuevaCuenta = new Cuenta(id, titulo, descripcion);
@@ -112,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
     public void actualizarRecyclerView(){
         recicler.setLayoutManager(new LinearLayoutManager(this));
 
-        adaptadorCuentas adapter=new adaptadorCuentas(listaCuentasUsuario,getApplicationContext());
+        adaptadorCuentas adapter=new adaptadorCuentas(  listaCuentasUsuario,this /*getApplicationContext()*/);
         recicler.setAdapter(adapter);
 
     }
@@ -137,6 +138,11 @@ public class MainActivity extends AppCompatActivity {
             if(data.getBooleanExtra("addCuenta",false)){
                 add_ID_a_cuentas(data.getLongExtra("idCuenta",0));
             }
+        }
+
+        if(requestCode==2 && resultCode==Activity.RESULT_OK){//se ha añadido un movimiento
+            Log.e("mensaje","se ha cargado un nuevo movimiento");
+            leerListas();
         }
 
     }

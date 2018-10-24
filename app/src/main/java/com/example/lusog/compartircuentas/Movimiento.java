@@ -14,4 +14,15 @@ public class Movimiento {
         this.fecha=fecha;
         this.id=id;
     }
+
+    //constructor necesario para las llamadas de firebase
+    public Movimiento(){
+
+    }
+
+
+    public String toString(){
+        return "Cantidad:"+cantidad+"€ concepto:'"+concepto+"' pagador:'"+Nombre+"' fecha:"+fecha+" id:"+id;
+    }
+
 }

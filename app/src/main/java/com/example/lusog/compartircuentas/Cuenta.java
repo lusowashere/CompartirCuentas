@@ -1,10 +1,16 @@
 package com.example.lusog.compartircuentas;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 class Cuenta {
     public ArrayList<String> listaNombres;
@@ -12,6 +18,55 @@ class Cuenta {
     public String titulo, descripcion;
     public ArrayList<Movimiento> movimientosCuenta;
     public double importeTotal;
+
+    private FirebaseDatabase database;
+    private DatabaseReference myRef;
+
+    /////CONSTRUCTORES
+    public Cuenta(long idCuenta){//constructor que toma únicamente el id y lee toda la información de firebase
+        database=FirebaseDatabase.getInstance();
+        myRef=database.getReference("listas");
+
+        movimientosCuenta=new ArrayList<>();
+
+        myRef.child(Long.toString(idCuenta)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                id=Long.parseLong( dataSnapshot.child("id").getValue().toString());
+                titulo=dataSnapshot.child("titulo").getValue().toString();
+                descripcion=dataSnapshot.child("descripcion").toString();
+
+                //añado los nombres
+                String ristraNombres=dataSnapshot.child("participantes").toString();
+                listaNombres=new ArrayList<>();
+                for(String n:ristraNombres.split(";")){
+                    listaNombres.add(n);
+                }
+
+                //Log.e("mensaje","Leida cuenta "+id+" con titulo '"+titulo+"'");
+
+                //añado los movimientos
+                //movimientosCuenta=new ArrayList<>();
+                for(DataSnapshot postSnapshot:dataSnapshot.child("movimientos").getChildren()){
+                    Movimiento  m=postSnapshot.getValue(Movimiento.class);
+                    movimientosCuenta.add(m);
+                    //Log.e("mensaje","leido movimiento "+m.toString());
+
+                }
+
+                calcularImporteTotal();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
+
 
     public Cuenta(long id, String titulo, String descripcion){
         this.id=id;
@@ -38,13 +93,28 @@ class Cuenta {
         movimientosCuenta=new ArrayList<>();
     }
 
+
+    ///METODOS
+
+
+
     public void calcularImporteTotal(){
         importeTotal=0;
+
+        //Log.e("mensaje","Calculando importe - importe anterior:"+importeTotal+"€");
+
         for(Movimiento mov:movimientosCuenta){
             importeTotal+=mov.cantidad;
+            //Log.e("mensaje","añadido importe de movimiento "+mov.toString());
+            //Log.e("mensaje","importeTotal:"+importeTotal+"€");
         }
 
-        //aquí faltaría guardarlo en firebase
+        guardarImporteTotal();
+    }
+
+    public void guardarImporteTotal(){
+
+        myRef.child(Long.toString(id)).child("importeTotal").setValue(importeTotal);
     }
 
 
