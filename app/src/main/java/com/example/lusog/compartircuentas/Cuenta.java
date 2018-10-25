@@ -23,23 +23,30 @@ class Cuenta {
     private DatabaseReference myRef;
 
     /////CONSTRUCTORES
-    public Cuenta(long idCuenta){//constructor que toma únicamente el id y lee toda la información de firebase
+    public Cuenta(final long idCuenta){//constructor que toma únicamente el id y lee toda la información de firebase
         database=FirebaseDatabase.getInstance();
         myRef=database.getReference("listas");
 
         movimientosCuenta=new ArrayList<>();
 
+        id=idCuenta;
+
         myRef.child(Long.toString(idCuenta)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                id=Long.parseLong( dataSnapshot.child("id").getValue().toString());
+                //id=Long.parseLong( dataSnapshot.child("id").getValue().toString());
+
+                Log.e("mensaje:","id que estoy leyendo:"+idCuenta);
+
+                //id=idCuenta;
                 titulo=dataSnapshot.child("titulo").getValue().toString();
-                descripcion=dataSnapshot.child("descripcion").toString();
+                descripcion=dataSnapshot.child("descripcion").getValue().toString();
 
                 //añado los nombres
-                String ristraNombres=dataSnapshot.child("participantes").toString();
+                String ristraNombres=dataSnapshot.child("participantes").getValue().toString();
                 listaNombres=new ArrayList<>();
                 for(String n:ristraNombres.split(";")){
+                    Log.e("mensaje","añadir nombre '"+n+"'");
                     listaNombres.add(n);
                 }
 
@@ -100,16 +107,22 @@ class Cuenta {
 
     public void calcularImporteTotal(){
         importeTotal=0;
+        double nuevoImporte=0;
 
-        //Log.e("mensaje","Calculando importe - importe anterior:"+importeTotal+"€");
+
+        Log.e("mensaje","Calculando importe - importe anterior:"+importeTotal+"€");
 
         for(Movimiento mov:movimientosCuenta){
             importeTotal+=mov.cantidad;
-            //Log.e("mensaje","añadido importe de movimiento "+mov.toString());
-            //Log.e("mensaje","importeTotal:"+importeTotal+"€");
+            Log.e("mensaje","añadido importe de movimiento "+mov.toString());
+            Log.e("mensaje","importeTotal:"+importeTotal+"€");
         }
 
+        //redondeo por si acaso
+        importeTotal=(double) Math.round(importeTotal*100)/100;
+
         guardarImporteTotal();
+        Log.e("mensaje","importeTotaldentrodefuncion:"+importeTotal+"€");
     }
 
     public void guardarImporteTotal(){
@@ -117,6 +130,9 @@ class Cuenta {
         myRef.child(Long.toString(id)).child("importeTotal").setValue(importeTotal);
     }
 
+    public double getImporteTotal(){
+        return  importeTotal;
+    }
 
     public long crearIdConFecha(){
         long idPropuesto;

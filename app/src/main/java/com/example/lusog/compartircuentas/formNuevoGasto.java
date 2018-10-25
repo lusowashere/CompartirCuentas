@@ -34,6 +34,7 @@ public class formNuevoGasto extends AppCompatActivity {
     EditText txtBoxConcepto, txtBoxFecha,txtBoxImporte;
     String idMovimiento;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,11 +121,18 @@ public class formNuevoGasto extends AppCompatActivity {
 
                     myRef.child(Long.toString(numeroCuenta)).child("movimientos").child(idMovimiento).setValue(nuevoMovimiento);
 
-                    recalcularYguardarImporteTotal();
+
 
                     dialog.dismiss();
 
                     Intent returnIntent=new Intent();
+
+                    recalcularYguardarImporteTotal();
+                    /*double nuevoImporte=cuentaTemp.importeTotal;
+                    Log.e("mensaje","importe fuera de funcion:"+nuevoImporte+"€");
+
+                    returnIntent.putExtra("nuevoImporteTotal", nuevoImporte);
+                    returnIntent.putExtra("idCuenta",numeroCuenta);*/
 
                     setResult(Activity.RESULT_OK, returnIntent);
 
@@ -151,10 +159,11 @@ public class formNuevoGasto extends AppCompatActivity {
 
 
     public void recalcularYguardarImporteTotal(){
+        Log.e ("mensaje","el numero de cuenta es:"+numeroCuenta);
         Cuenta cuentaTemp=new Cuenta(numeroCuenta);
 
         cuentaTemp.calcularImporteTotal();
-        //cuentaTemp.guardarImporteTotal();
+
     }
 
 

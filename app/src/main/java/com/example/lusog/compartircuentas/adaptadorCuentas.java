@@ -5,11 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -18,9 +26,17 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
     ArrayList<Cuenta> listaCuentas;
     private final Context context;
 
+    FirebaseDatabase database;
+    DatabaseReference myRef;
+
+
     public adaptadorCuentas(ArrayList<Cuenta> listaCuentas, Context contexto) {
         this.listaCuentas = listaCuentas;
         this.context=contexto;
+
+        database=FirebaseDatabase.getInstance();
+        myRef=database.getReference("listas");
+
     }
 
     @NonNull
@@ -31,7 +47,7 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolderCuentas holder, final int position) {
+    public void onBindViewHolder(@NonNull final ViewHolderCuentas holder, final int position) {
         holder.txtTitulo.setText(listaCuentas.get(position).titulo);
         holder.txtImporte.setText(Double.toString( listaCuentas.get(position).importeTotal)+"€");
 
@@ -61,6 +77,34 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
                 ((Activity) context).startActivityForResult(intento,2);
 
                 //context.startActivity(new Intent(context,formNuevoGasto.class));
+
+            }
+        });
+
+
+        myRef.child(Long.toString(listaCuentas.get(position).id)).child("importeTotal").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                listaCuentas.get(position).importeTotal=Double.parseDouble( dataSnapshot.getValue().toString());
+                holder.txtImporte.setText(dataSnapshot.getValue().toString()+"€");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        myRef.child(Long.toString(listaCuentas.get(position).id)).child("titulo").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.e("mensaje","se va a intentar leer el título del id:"+Long.toString( listaCuentas.get(position).id));
+                listaCuentas.get(position).titulo=dataSnapshot.getValue().toString();
+                holder.txtTitulo.setText(dataSnapshot.getValue().toString());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
         });

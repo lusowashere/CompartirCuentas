@@ -1,15 +1,19 @@
 package com.example.lusog.compartircuentas;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -46,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
         listaCuentasUsuario=new ArrayList<>();
 
         recicler=findViewById(R.id.reciclerCuentas);
+        recicler.setLayoutManager(new LinearLayoutManager(this));
+        adaptadorCuentas adapter=new adaptadorCuentas(  listaCuentasUsuario,this /*getApplicationContext()*/);
+        recicler.setAdapter(adapter);
 
         leerListas();
 
@@ -68,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.e("Mensaje", "Intentando leer cuenta con id'" + idLista + "'");
 
+                    /*
                     myRef.child(idLista).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -79,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                             titulo = (String) dataSnapshot.child("titulo").getValue();
                             descripcion = (String) dataSnapshot.child("descripcion").getValue();
                             importeTotal = (Double) Double.parseDouble(dataSnapshot.child("importeTotal").getValue().toString());
-                            Log.e("mensaje","importe total:"+importeTotal+"€");
+                            //Log.e("mensaje","importe total:"+importeTotal+"€");
                             ristraNombres = (String) dataSnapshot.child("participantes").getValue();
 
                             Cuenta nuevaCuenta = new Cuenta(id, titulo, descripcion);
@@ -88,8 +96,9 @@ public class MainActivity extends AppCompatActivity {
 
                             listaCuentasUsuario.add(nuevaCuenta);
 
-                            actualizarRecyclerView();
+                            //actualizarRecyclerView();
 
+                            recicler.getAdapter().notifyDataSetChanged();
 
                         }
 
@@ -97,7 +106,9 @@ public class MainActivity extends AppCompatActivity {
                         public void onCancelled(@NonNull DatabaseError databaseError) {
 
                         }
-                    });
+                    });*/
+
+                    listaCuentasUsuario.add(new Cuenta(Long.parseLong(idLista)));
                 }
 
                 //Log.e("mensaje","parece que se ha leido bien el archivo"+cuenta);
@@ -113,8 +124,11 @@ public class MainActivity extends AppCompatActivity {
     public void actualizarRecyclerView(){
         recicler.setLayoutManager(new LinearLayoutManager(this));
 
+
         adaptadorCuentas adapter=new adaptadorCuentas(  listaCuentasUsuario,this /*getApplicationContext()*/);
         recicler.setAdapter(adapter);
+
+        adapter.notifyDataSetChanged();
 
     }
 
@@ -125,6 +139,34 @@ public class MainActivity extends AppCompatActivity {
 
         //startActivity(intento);
         startActivityForResult(intento,1);
+
+    }
+
+    public void butt_unirse_a_cuenta_CLICK(View view){
+        final AlertDialog.Builder builder= new AlertDialog.Builder(this);
+
+        builder.setTitle("Introducir el número de cuenta al que quieras unirte");
+
+        final EditText input=new EditText(this);
+        builder.setView(input);
+
+        builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //añadir cuenta
+                dialog.dismiss();
+
+            }
+        });
+
+
+        builder.create().show();
 
     }
 
@@ -141,8 +183,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(requestCode==2 && resultCode==Activity.RESULT_OK){//se ha añadido un movimiento
-            Log.e("mensaje","se ha cargado un nuevo movimiento");
-            leerListas();
+            /*Log.e("mensaje","se ha cargado un nuevo movimientoooo");
+            leerListas();*/
+
+            long idMovimientoModificado=data.getLongExtra("idCuenta",0);
+
+            /*
+
+            for(Cuenta c:listaCuentasUsuario){
+                if(idMovimientoModificado==c.id){
+
+                    recicler.getAdapter().notifyDataSetChanged();
+                }
+            }*/
+
+
         }
 
     }
@@ -173,6 +228,7 @@ public class MainActivity extends AppCompatActivity {
         if(!yaEstaba){
             cuentasActuales+=";"+idNuevo;
 
+            //escribo el archivo
             try{
                 OutputStreamWriter osw=new OutputStreamWriter(openFileOutput(rutaArchivoCuentasUsuario,Context.MODE_PRIVATE));
                 osw.write(cuentasActuales);
