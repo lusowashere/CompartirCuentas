@@ -55,6 +55,12 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
             @Override
             public void onClick(View v) {
                 //aquí se abrirá un formulario que llevará a los detalles
+                Intent intento=new Intent(context,pant_principal_cuenta.class);
+
+                intento.putExtra("idCuenta",listaCuentas.get(position).id);
+
+                ((Activity) context).startActivityForResult(intento,3);
+
             }
         });
 
@@ -67,6 +73,7 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
                 intento.putExtra("idCuenta",listaCuentas.get(position).id);
                 intento.putExtra("nombres",listaCuentas.get(position).getListaUnicoString());
                 intento.putExtra("titulo",listaCuentas.get(position).titulo);
+                //esto lo puse para algo, pero ya me acordaré de qué
                 intento.putExtra("idMovimiento","");
 
                 //context.startActivity(intento);

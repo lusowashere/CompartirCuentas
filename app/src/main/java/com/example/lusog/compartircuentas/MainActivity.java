@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });*/
 
-                    listaCuentasUsuario.add(new Cuenta(Long.parseLong(idLista)));
+                    listaCuentasUsuario.add(new Cuenta(Long.parseLong(idLista),false,false));//en este no necesito leer los movimientos
                 }
 
                 //Log.e("mensaje","parece que se ha leido bien el archivo"+cuenta);

@@ -1,7 +1,9 @@
 package com.example.lusog.compartircuentas;
 
 import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -13,23 +15,32 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 class Cuenta {
-    public ArrayList<String> listaNombres;
+    //private ArrayList<String> listaNombres;
+
+    public ArrayList<Persona> listaNombres;
     public long id;
     public String titulo, descripcion;
     public ArrayList<Movimiento> movimientosCuenta;
     public double importeTotal;
 
+
+    private TextView textoTitulo, textoImporteTotal,textoNpersonas,textoCostePromedio;
+    private RecyclerView recycler;
+
+
     private FirebaseDatabase database;
     private DatabaseReference myRef;
 
     /////CONSTRUCTORES
-    public Cuenta(final long idCuenta){//constructor que toma únicamente el id y lee toda la información de firebase
+    public Cuenta(final long idCuenta, final boolean leerMovimientos, final boolean rellenarTextViews){//constructor que toma únicamente el id y lee toda la información de firebase
         database=FirebaseDatabase.getInstance();
         myRef=database.getReference("listas");
 
         movimientosCuenta=new ArrayList<>();
 
         id=idCuenta;
+
+        listaNombres=new ArrayList<>();
 
         myRef.child(Long.toString(idCuenta)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -41,27 +52,46 @@ class Cuenta {
                 //id=idCuenta;
                 titulo=dataSnapshot.child("titulo").getValue().toString();
                 descripcion=dataSnapshot.child("descripcion").getValue().toString();
+                importeTotal=Double.parseDouble(dataSnapshot.child("importeTotal").getValue().toString());
 
                 //añado los nombres
                 String ristraNombres=dataSnapshot.child("participantes").getValue().toString();
                 listaNombres=new ArrayList<>();
                 for(String n:ristraNombres.split(";")){
                     Log.e("mensaje","añadir nombre '"+n+"'");
-                    listaNombres.add(n);
+                    listaNombres.add(new Persona(n));
+                }
+
+
+
+                //si es la pantalla principal, relleno los textBoxes
+                if(rellenarTextViews) {
+                    textoTitulo.setText(titulo);
+                    textoImporteTotal.setText(Double.toString(importeTotal)+"€");
+                    textoNpersonas.setText(listaNombres.size()+" personas");
+                    textoCostePromedio.setText( getImportePromedio()+"€/persona");
+                    AdaptadorPersonas adapter=new AdaptadorPersonas(listaNombres,getImportePromedio());
+                    recycler.setAdapter(adapter);
                 }
 
                 //Log.e("mensaje","Leida cuenta "+id+" con titulo '"+titulo+"'");
 
-                //añado los movimientos
-                //movimientosCuenta=new ArrayList<>();
-                for(DataSnapshot postSnapshot:dataSnapshot.child("movimientos").getChildren()){
-                    Movimiento  m=postSnapshot.getValue(Movimiento.class);
-                    movimientosCuenta.add(m);
-                    //Log.e("mensaje","leido movimiento "+m.toString());
+                if(leerMovimientos) {
 
+                    //añado los movimientos
+                    //movimientosCuenta=new ArrayList<>();
+                    for (DataSnapshot postSnapshot : dataSnapshot.child("movimientos").getChildren()) {
+                        Movimiento m = postSnapshot.getValue(Movimiento.class);
+                        addMovimiento(m);
+                        //Log.e("mensaje","leido movimiento "+m.toString());
+
+                        if(rellenarTextViews){recycler.getAdapter().notifyDataSetChanged();}
+
+                    }
+
+
+                    calcularImporteTotal();
                 }
-
-                calcularImporteTotal();
 
             }
 
@@ -157,7 +187,7 @@ class Cuenta {
     }
 
     public void add_nombre_a_lista_nombres(String nuevoNombre){
-        listaNombres.add(nuevoNombre);
+        listaNombres.add(new Persona(nuevoNombre));
     }
     public void remove_nombre_from_lista_nombre(String nombre_a_quitar){
         listaNombres.remove(nombre_a_quitar);
@@ -168,11 +198,11 @@ class Cuenta {
         String str="";
         int i=0;
 
-        for(String n:listaNombres){
+        for(Persona n:listaNombres){
             if(i>0){
                 str+= ";";
             }
-            str+=n;
+            str+=n.nombre;
             i++;
         }
 
@@ -192,5 +222,48 @@ class Cuenta {
         }
 
     }
+
+    public double getImportePromedio(){//no lo pongo como fijo, se calcula  cada vez que es lo mejor
+
+        if(listaNombres.size()>0) {
+
+            return (double)  Math.round(100*importeTotal / listaNombres.size())/100;
+        }else{
+            return importeTotal;
+        }
+    }
+
+    public int getNumeroPersonas(){
+        return listaNombres.size();
+    }
+
+    //esto se utiliza sólamente cuando se está leyendo toda la info para la pantalla general
+    public void setTextViews(TextView labelTitulo, TextView labelImporte, TextView labelPersonas, TextView labelPromedio, RecyclerView reciclerNombres){
+        textoTitulo=labelTitulo;
+        textoImporteTotal=labelImporte;
+        textoNpersonas=labelPersonas;
+        textoCostePromedio=labelPromedio;
+
+        recycler=reciclerNombres;
+        //aquí además le asigno la lista
+        /*AdaptadorPersonas adapter=new AdaptadorPersonas(listaNombres);
+        recycler.setAdapter(adapter);*/
+
+    }
+
+
+    public void addMovimiento(Movimiento nuevoMovimiento){//añado movimientos a la lista y a la gente a la que lo ha hecho
+        movimientosCuenta.add(nuevoMovimiento);
+
+
+
+        for(Persona p:listaNombres){
+            if(nuevoMovimiento.Nombre.equals(p.nombre)){//se le añade también el movimiento a la persona
+                p.addMovimiento(nuevoMovimiento,getImportePromedio());
+            }
+        }
+
+    }
+
 
 }

@@ -109,7 +109,7 @@ public class formNuevoGasto extends AppCompatActivity {
         {
 
             alerta.setTitle("Apuntar nuevo gasto");
-            alerta.setMessage("¿Desea añadir un gasto de "+importe+"€ pagados por "+nombre+" el día "+fecha+" con el concepto \""+concepto+"\"?");
+            alerta.setMessage("¿Desea añadir un gasto de "+importe+"€ pagados por '"+comboBoxNombres.getSelectedItem().toString()+"' el día "+fecha+" con el concepto \""+concepto+"\"?");
 
             alerta.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
                 @Override
@@ -117,7 +117,7 @@ public class formNuevoGasto extends AppCompatActivity {
 
                     idMovimiento=crearIdConFecha();
 
-                    Movimiento nuevoMovimiento=new Movimiento(importe,concepto,nombre,fecha,idMovimiento);
+                    Movimiento nuevoMovimiento=new Movimiento(importe,concepto,comboBoxNombres.getSelectedItem().toString(),fecha,idMovimiento);
 
                     myRef.child(Long.toString(numeroCuenta)).child("movimientos").child(idMovimiento).setValue(nuevoMovimiento);
 
@@ -160,7 +160,7 @@ public class formNuevoGasto extends AppCompatActivity {
 
     public void recalcularYguardarImporteTotal(){
         Log.e ("mensaje","el numero de cuenta es:"+numeroCuenta);
-        Cuenta cuentaTemp=new Cuenta(numeroCuenta);
+        Cuenta cuentaTemp=new Cuenta(numeroCuenta,true,false);
 
         cuentaTemp.calcularImporteTotal();
 

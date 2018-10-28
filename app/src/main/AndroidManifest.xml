@@ -34,7 +34,8 @@
         <activity
             android:name=".listaNombres"
             android:windowSoftInputMode="stateHidden" />
-        <activity android:name=".formNuevoGasto"></activity>
+        <activity android:name=".formNuevoGasto" />
+        <activity android:name=".pant_principal_cuenta"></activity>
     </application>
 
 </manifest>

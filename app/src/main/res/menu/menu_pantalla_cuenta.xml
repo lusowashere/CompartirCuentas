@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/idButtCambiarConfiguracion"
+        android:title="Caracteristicas de cuenta" />
+    <item
+        android:id="@+id/idButtCompartirCuenta"
+        android:title="Compartir Cuenta" />
+    <item
+        android:id="@+id/idButtOlvidarCuenta"
+        android:title="Olvidar cuenta" />
+    <item
+        android:id="@+id/idButtEliminarCuenta"
+        android:title="Eliminar Cuenta" />
+</menu>
