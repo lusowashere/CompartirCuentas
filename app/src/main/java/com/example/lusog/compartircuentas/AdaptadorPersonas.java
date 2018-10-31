@@ -30,7 +30,7 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
     @NonNull
     @Override
     public ViewHolderPersonas onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view=LayoutInflater.from(parent.getContext()).inflate(R.layout.item_personas_cuenta,null);
+        View view=LayoutInflater.from(parent.getContext()).inflate(R.layout.item_personas_cuenta,parent,false);
         return new ViewHolderPersonas(view);
     }
 

@@ -78,10 +78,14 @@ public class pant_principal_cuenta extends AppCompatActivity {
 
         intento.putExtra("numeroCuenta",cuentaActual.id);
         intento.putExtra("sonMovimientosPersona",false);
+
+
         intento.putExtra("nombrePersona",cuentaActual.titulo);
         intento.putExtra("nMovimientos",cuentaActual.movimientosCuenta.size());
         intento.putExtra("totalPagado",cuentaActual.getImporteTotal());
 
+
+        //intento.putExtra("cuenta",cuentaActual);
 
         startActivity(intento);
 

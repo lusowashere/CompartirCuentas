@@ -53,7 +53,7 @@ public class pant_ver_movimientos extends AppCompatActivity {
         recyclerMovimientos=findViewById(R.id.reciclerViewMovimientos);
 
         recyclerMovimientos.setLayoutManager(new  LinearLayoutManager(this));
-        AdaptadorMovimientos adapter=new AdaptadorMovimientos(  listaMovimientos);
+        AdaptadorMovimientos adapter=new AdaptadorMovimientos(  listaMovimientos,numeroCuenta);
         recyclerMovimientos.setAdapter(adapter);
 
         textoTitulo.setText(nombrePersona_o_cuenta);
