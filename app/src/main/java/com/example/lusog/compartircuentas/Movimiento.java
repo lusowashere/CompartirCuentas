@@ -25,4 +25,12 @@ public class Movimiento {
         return "Cantidad:"+cantidad+"€ concepto:'"+concepto+"' pagador:'"+Nombre+"' fecha:"+fecha+" id:"+id;
     }
 
+    public void copiarDeOtroMovimiento(Movimiento otroMov){
+        cantidad=otroMov.cantidad;
+        concepto=otroMov.concepto;
+        Nombre=otroMov.Nombre;
+        id=otroMov.id;
+        fecha=otroMov.fecha;
+    }
+
 }

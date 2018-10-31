@@ -145,10 +145,12 @@ public class MainActivity extends AppCompatActivity {
     public void butt_unirse_a_cuenta_CLICK(View view){
         final AlertDialog.Builder builder= new AlertDialog.Builder(this);
 
-        builder.setTitle("Introducir el número de cuenta al que quieras unirte");
+        builder.setTitle("Introduce el número de cuenta al que quieras unirte");
 
         final EditText input=new EditText(this);
         builder.setView(input);
+
+        final Context contexto1=this;
 
         builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
             @Override
@@ -157,9 +159,45 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //añadir cuenta
+
+                final long numeroCuentaNuevo=CodificacionCuentas.getLongDesCodificado(input.getText().toString());
+
+                myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        AlertDialog.Builder alertaAdded=new AlertDialog.Builder(contexto1);
+
+                        if(dataSnapshot.hasChild(Long.toString( numeroCuentaNuevo))){
+                            alertaAdded.setMessage("Cuenta con id '"+numeroCuentaNuevo+"' añadida");
+                            add_ID_a_cuentas(numeroCuentaNuevo);
+                        }else{
+
+                            alertaAdded.setMessage("No existe la cuenta con el id '"+Long.toString(numeroCuentaNuevo)+"'");
+
+                        }
+
+                        alertaAdded.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                        alertaAdded.create().show();
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
                 dialog.dismiss();
 
             }
@@ -186,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
             /*Log.e("mensaje","se ha cargado un nuevo movimientoooo");
             leerListas();*/
 
-            long idMovimientoModificado=data.getLongExtra("idCuenta",0);
+            //long idMovimientoModificado=data.getLongExtra("idCuenta",0);
 
             /*
 
@@ -236,6 +274,8 @@ public class MainActivity extends AppCompatActivity {
             }catch (Exception e){
                 Log.e("mensaje","no se ha podido guardar el archivo");
             }
+        }else{
+            //debería saltar una alerta diciendo que ya existe la cuenta
         }
 
         leerListas();

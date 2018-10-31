@@ -1,5 +1,9 @@
 package com.example.lusog.compartircuentas;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -15,10 +19,12 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
 
     ArrayList<Persona> listaPersonas;
     double costePromedio;
+    long numeroCuenta;
 
-    public AdaptadorPersonas(ArrayList<Persona> listaPersonas, double promedio) {
+    public AdaptadorPersonas(ArrayList<Persona> listaPersonas, double promedio,long nCuenta) {
         this.listaPersonas = listaPersonas;
         costePromedio=promedio;
+        numeroCuenta=nCuenta;
     }
 
     @NonNull
@@ -29,7 +35,7 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolderPersonas holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolderPersonas holder, final int position) {
         holder.labelNombre.setText(listaPersonas.get(position).nombre);
         holder.labelMovimientos.setText(listaPersonas.get(position).numeroMovimientos+" gastos");
         holder.labelTotal.setText(listaPersonas.get(position).getTotalPagado());
@@ -42,6 +48,23 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
         }else if(listaPersonas.get(position).deuda<0){
             holder.labelDeuda.setTextColor(Color.rgb(0, 102, 0));
         }
+
+
+        holder.botonMas.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intento=new Intent(v.getContext(),pant_ver_movimientos.class);
+                intento.putExtra("numeroCuenta",numeroCuenta);
+                intento.putExtra("sonMovimientosPersona",true);
+                intento.putExtra("nombrePersona",listaPersonas.get(position).nombre);
+                intento.putExtra("nMovimientos",listaPersonas.get(position).numeroMovimientos);
+                intento.putExtra("totalPagado",listaPersonas.get(position).getTotalPagado());
+                intento.putExtra("deuda",listaPersonas.get(position).getDeuda(costePromedio));
+
+                v.getContext().startActivity(intento);
+
+            }
+        });
 
 
     }

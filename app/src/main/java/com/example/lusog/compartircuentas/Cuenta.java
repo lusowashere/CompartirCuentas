@@ -1,5 +1,6 @@
 package com.example.lusog.compartircuentas;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -67,10 +68,10 @@ class Cuenta {
                 //si es la pantalla principal, relleno los textBoxes
                 if(rellenarTextViews) {
                     textoTitulo.setText(titulo);
-                    textoImporteTotal.setText(Double.toString(importeTotal)+"€");
+                    textoImporteTotal.setText(String.format("%.2f",importeTotal)+"€");
                     textoNpersonas.setText(listaNombres.size()+" personas");
-                    textoCostePromedio.setText( getImportePromedio()+"€/persona");
-                    AdaptadorPersonas adapter=new AdaptadorPersonas(listaNombres,getImportePromedio());
+                    textoCostePromedio.setText(String.format("%.2f",getImportePromedio())+"€/persona");
+                    AdaptadorPersonas adapter=new AdaptadorPersonas(listaNombres,getImportePromedio(),idCuenta);
                     recycler.setAdapter(adapter);
                 }
 
@@ -245,6 +246,9 @@ class Cuenta {
         textoCostePromedio=labelPromedio;
 
         recycler=reciclerNombres;
+
+
+
         //aquí además le asigno la lista
         /*AdaptadorPersonas adapter=new AdaptadorPersonas(listaNombres);
         recycler.setAdapter(adapter);*/
