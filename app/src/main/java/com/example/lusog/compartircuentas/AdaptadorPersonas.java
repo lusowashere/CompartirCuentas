@@ -41,7 +41,7 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
         holder.labelTotal.setText(listaPersonas.get(position).getTotalPagado());
 
 
-        holder.labelDeuda.setText(listaPersonas.get(position).getDeuda(costePromedio));
+        holder.labelDeuda.setText(listaPersonas.get(position).getDeuda());
         //lo pinto del color del tipo de deuda
         if(listaPersonas.get(position).deuda>0){
             holder.labelDeuda.setTextColor(Color.RED);
@@ -55,11 +55,15 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
             public void onClick(View v) {
                 Intent intento=new Intent(v.getContext(),pant_ver_movimientos.class);
                 intento.putExtra("numeroCuenta",numeroCuenta);
+
                 intento.putExtra("sonMovimientosPersona",true);
-                intento.putExtra("nombrePersona",listaPersonas.get(position).nombre);
+                /*intento.putExtra("nombrePersona",listaPersonas.get(position).nombre);
                 intento.putExtra("nMovimientos",listaPersonas.get(position).numeroMovimientos);
                 intento.putExtra("totalPagado",listaPersonas.get(position).getTotalPagado());
                 intento.putExtra("deuda",listaPersonas.get(position).getDeuda(costePromedio));
+                */
+
+                intento.putExtra("persona",listaPersonas.get(position));
 
                 v.getContext().startActivity(intento);
 

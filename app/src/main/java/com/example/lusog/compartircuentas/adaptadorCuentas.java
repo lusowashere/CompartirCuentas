@@ -16,21 +16,21 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
 public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.ViewHolderCuentas> {
 
-    ArrayList<Cuenta> listaCuentas;
+    //ArrayList<Cuenta> listaCuentas;
+    ArrayList<Cuenta2> listaCuentas;
     private final Context context;
 
     FirebaseDatabase database;
     DatabaseReference myRef;
 
 
-    public adaptadorCuentas(ArrayList<Cuenta> listaCuentas, Context contexto) {
+    public adaptadorCuentas(ArrayList<Cuenta2> listaCuentas, Context contexto) {
         this.listaCuentas = listaCuentas;
         this.context=contexto;
 
@@ -39,17 +39,22 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
 
     }
 
+
+
     @NonNull
     @Override
     public ViewHolderCuentas onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_lista_principal,null);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_lista_principal,parent,false);
         return new ViewHolderCuentas(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolderCuentas holder, final int position) {
-        holder.txtTitulo.setText(listaCuentas.get(position).titulo);
-        holder.txtImporte.setText(Double.toString( listaCuentas.get(position).importeTotal)+"€");
+        //holder.txtTitulo.setText(listaCuentas.get(position).titulo);
+        //holder.txtImporte.setText(Double.toString( listaCuentas.get(position).importeTotal)+"€");
+
+        listaCuentas.get(position).addLabel("titulo",holder.txtTitulo);
+        listaCuentas.get(position).addLabel("importeTotal",holder.txtImporte);
 
         holder.buttVerDetalles.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,11 +63,15 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
                 Intent intento=new Intent(context,pant_principal_cuenta.class);
 
                 intento.putExtra("idCuenta",listaCuentas.get(position).id);
+                //intento.putExtra("cuenta",listaCuentas.get(position).getCuentaSerializable());
 
                 ((Activity) context).startActivityForResult(intento,3);
 
             }
         });
+
+
+
 
         holder.buttNuevoGasto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,8 +97,9 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
             }
         });
 
-
-        myRef.child(Long.toString(listaCuentas.get(position).id)).child("importeTotal").addValueEventListener(new ValueEventListener() {
+/*
+        myRef.child(Long.toString(listaCuentas.get(position).id)).child("importeTotal").addValueEventListener(new ValueEventListener()
+        {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 listaCuentas.get(position).importeTotal=Double.parseDouble( dataSnapshot.getValue().toString());
@@ -102,7 +112,8 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
             }
         });
 
-        myRef.child(Long.toString(listaCuentas.get(position).id)).child("titulo").addValueEventListener(new ValueEventListener() {
+        myRef.child(Long.toString(listaCuentas.get(position).id)).child("titulo").addValueEventListener(new ValueEventListener()
+        {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Log.e("mensaje","se va a intentar leer el título del id:"+Long.toString( listaCuentas.get(position).id));
@@ -115,7 +126,7 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
 
             }
         });
-
+*/
     }
 
     @Override

@@ -1,8 +1,9 @@
 package com.example.lusog.compartircuentas;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Persona {
+public class Persona implements Serializable {
     public String nombre;
     public Double totalPagado, deuda;
     public ArrayList<Movimiento> movimientos;
@@ -16,14 +17,14 @@ public class Persona {
         numeroMovimientos=0;
     }
 
-    public void addMovimiento(Movimiento nuevoMovimiento, double importePromedio){
+    public void addMovimiento(Movimiento nuevoMovimiento){
         movimientos.add(nuevoMovimiento);
         calcularTotalPagado_totalMovimientos();
-        calcularDeuda(importePromedio);
+        //calcularDeuda(importePromedio);
     }
 
 
-    private void calcularDeuda(double importePromedio){
+    public void calcularDeuda(double importePromedio){
         deuda=importePromedio-totalPagado;
     }
 
@@ -46,9 +47,9 @@ public class Persona {
     }
 
 
-    public String getDeuda(double importePromedio){
+    public String getDeuda(){
 
-        deuda=importePromedio-totalPagado;
+        //deuda=importePromedio-totalPagado;
 
         if(deuda>=0){
             //return "Debe "+ Double.toString(Math.round(100*deuda)/100)+"€";

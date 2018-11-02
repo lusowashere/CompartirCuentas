@@ -264,7 +264,7 @@ class Cuenta implements Serializable {
 
         for(Persona p:listaNombres){
             if(nuevoMovimiento.Nombre.equals(p.nombre)){//se le añade también el movimiento a la persona
-                p.addMovimiento(nuevoMovimiento,getImportePromedio());
+                p.addMovimiento(nuevoMovimiento/*,getImportePromedio()*/);
             }
         }
 

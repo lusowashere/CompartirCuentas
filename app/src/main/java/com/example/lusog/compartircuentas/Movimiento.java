@@ -1,8 +1,9 @@
 package com.example.lusog.compartircuentas;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Movimiento {
+public class Movimiento implements Serializable {
     public double cantidad;
     public String concepto, Nombre, id;
     public String fecha;

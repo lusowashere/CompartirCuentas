@@ -28,7 +28,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    public ArrayList<Cuenta> listaCuentasUsuario;
+    //public ArrayList<Cuenta> listaCuentasUsuario;
+    ArrayList<Cuenta2> listaCuentasUsuario;
     public String rutaArchivoCuentasUsuario;
 
     public FirebaseDatabase database;
@@ -51,7 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
         recicler=findViewById(R.id.reciclerCuentas);
         recicler.setLayoutManager(new LinearLayoutManager(this));
-        adaptadorCuentas adapter=new adaptadorCuentas(  listaCuentasUsuario,this /*getApplicationContext()*/);
+        //adaptadorCuentas adapter=new adaptadorCuentas(  listaCuentasUsuario,this /*getApplicationContext()*/);
+
+        adaptadorCuentas adapter=new adaptadorCuentas(listaCuentasUsuario,this);
+
         recicler.setAdapter(adapter);
 
         leerListas();
@@ -73,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (!idLista.equals("")) {
 
-                    Log.e("Mensaje", "Intentando leer cuenta con id'" + idLista + "'");
+                    //Log.e("Mensaje", "Intentando leer cuenta con id'" + idLista + "'");
 
                     /*
                     myRef.child(idLista).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -108,7 +112,15 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });*/
 
-                    listaCuentasUsuario.add(new Cuenta(Long.parseLong(idLista),false,false));//en este no necesito leer los movimientos
+                    //listaCuentasUsuario.add(new Cuenta(Long.parseLong(idLista),false,false));//en este no necesito leer los movimientos
+                    //listaCuentasUsuario.add(new Cuenta2(Long.parseLong(idLista)));
+
+                    Cuenta2 aux=new Cuenta2();
+                    aux.id=Long.parseLong(idLista);
+
+                    listaCuentasUsuario.add(aux);
+
+
                 }
 
                 //Log.e("mensaje","parece que se ha leido bien el archivo"+cuenta);
@@ -238,6 +250,31 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+        if(requestCode==3 && resultCode==Activity.RESULT_OK){//pantalla de resumen cuenta
+            if(data.getBooleanExtra("cuentaOlvidadaEliminada",false)){
+                final long idListaEliminada=data.getLongExtra("idCuentaEliminada",0);
+
+                //eliminamos el elemento de la lista que tenga ese id
+
+                int i=0;
+                int posicion=-1;
+
+                for(Cuenta2 c:listaCuentasUsuario){
+                    if(c.id==idListaEliminada){
+                        posicion=i;
+                    }
+                    i++;
+                }
+
+                if(i!=-1){
+                    listaCuentasUsuario.remove(posicion);
+                    recicler.getAdapter().notifyDataSetChanged();
+                }
+
+
+            }
+        }
+
     }
 
 
@@ -248,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
         boolean yaEstaba=false;
         boolean addPuntoComa=false;
 
-        for(Cuenta c:listaCuentasUsuario){
+        for(Cuenta2 c:listaCuentasUsuario){
 
             if(addPuntoComa){
                 cuentasActuales+=";";
@@ -271,6 +308,8 @@ public class MainActivity extends AppCompatActivity {
                 OutputStreamWriter osw=new OutputStreamWriter(openFileOutput(rutaArchivoCuentasUsuario,Context.MODE_PRIVATE));
                 osw.write(cuentasActuales);
                 osw.close();
+                listaCuentasUsuario.add(new Cuenta2(idNuevo));
+                recicler.getAdapter().notifyDataSetChanged();
             }catch (Exception e){
                 Log.e("mensaje","no se ha podido guardar el archivo");
             }
@@ -278,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
             //debería saltar una alerta diciendo que ya existe la cuenta
         }
 
-        leerListas();
+        //leerListas();
 
     }
 }

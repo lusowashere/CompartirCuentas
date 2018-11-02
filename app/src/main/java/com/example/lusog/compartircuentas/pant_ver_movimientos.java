@@ -1,6 +1,7 @@
 package com.example.lusog.compartircuentas;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -28,22 +29,32 @@ public class pant_ver_movimientos extends AppCompatActivity {
     RecyclerView recyclerMovimientos;
     String nombrePersona_o_cuenta;
     ArrayList<Movimiento> listaMovimientos;
+    boolean sonMovimientosPersona;
+
+    Cuenta2 cuenta;
+    Persona persona;
+
+    //Cuenta cuentaActual;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pant_ver_movimientos);
 
+/*
         database=FirebaseDatabase.getInstance();
         myRef=database.getReference("listas");
 
         listaMovimientos=new ArrayList<>();
-
+*/
         Intent intento=getIntent();
+
+        //cuentaActual=(Cuenta) intento.getSerializableExtra("cuenta");
 
         numeroCuenta=intento.getLongExtra("numeroCuenta",0);
 
-        nombrePersona_o_cuenta=intento.getStringExtra( "nombrePersona");
+        sonMovimientosPersona=intento.getBooleanExtra("sonMovimientosPersona",true);
 
         TextView textoTitulo=findViewById(R.id.labelTitulo);
         TextView textoMovimientos=findViewById(R.id.labelMovimientos);
@@ -52,10 +63,42 @@ public class pant_ver_movimientos extends AppCompatActivity {
 
         recyclerMovimientos=findViewById(R.id.reciclerViewMovimientos);
 
+
+        if(sonMovimientosPersona){
+            persona=(Persona) intento.getSerializableExtra("persona");
+            listaMovimientos=persona.movimientos;
+            textoTitulo.setText(persona.nombre);
+            textoMovimientos.setText(String.valueOf(persona.numeroMovimientos)+" movimientos");
+            textoTotal.setText(String.format("%.2f",persona.totalPagado)+"€");
+            textoDeuda.setText(persona.getDeuda());
+            if(persona.deuda>0){
+                textoDeuda.setTextColor(Color.RED);
+            }else{
+                textoDeuda.setTextColor(Color.rgb(0, 102, 0));
+            }
+        }else{
+            cuenta=new Cuenta2((CuentaSerializable) intento.getSerializableExtra("cuenta"));
+            listaMovimientos=cuenta.movimientosCuenta;
+            textoTitulo.setText( cuenta.titulo);
+            textoTotal.setText(String.format("%.2f",cuenta.importeTotal)+"€");
+            textoDeuda.setVisibility(View.INVISIBLE);
+            textoMovimientos.setText(String.valueOf(cuenta.movimientosCuenta.size())+" movimientos");
+        }
+
+
+        //numeroCuenta=cuentaActual.id;
+
+        //nombrePersona_o_cuenta=intento.getStringExtra( "nombrePersona");
+
+
+
+
+
+
         recyclerMovimientos.setLayoutManager(new  LinearLayoutManager(this));
         AdaptadorMovimientos adapter=new AdaptadorMovimientos(  listaMovimientos,numeroCuenta);
         recyclerMovimientos.setAdapter(adapter);
-
+/*
         textoTitulo.setText(nombrePersona_o_cuenta);
         textoMovimientos.setText(Integer.toString( intento.getIntExtra("nMovimientos",0))+" movimientos");
 
@@ -67,9 +110,21 @@ public class pant_ver_movimientos extends AppCompatActivity {
             myQuery=myRef.child(Long.toString( numeroCuenta)).child("movimientos").orderByChild("Nombre").equalTo(nombrePersona_o_cuenta);
         }else{
             textoTotal.setText(String.format("%.2f", intento.getDoubleExtra("totalPagado",0))+ "€");
+
             textoDeuda.setVisibility(View.INVISIBLE);
+            //textoTotal.setText(String.format("%.2f", cuentaActual.getImporteTotal()));
+
+            //listaMovimientos=cuentaActual.movimientosCuenta;
+
+            //recyclerMovimientos.getAdapter().notifyDataSetChanged();
+
+
             myQuery=myRef.child(Long.toString(numeroCuenta)).child("movimientos");
         }
+
+
+
+
 
         myQuery.addChildEventListener(new ChildEventListener() {
             @Override
@@ -112,6 +167,6 @@ public class pant_ver_movimientos extends AppCompatActivity {
 
             }
         });
-
+*/
     }
 }
