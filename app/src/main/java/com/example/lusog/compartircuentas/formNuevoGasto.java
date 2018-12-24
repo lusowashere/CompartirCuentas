@@ -33,7 +33,7 @@ public class formNuevoGasto extends AppCompatActivity {
     String nombre;
     EditText txtBoxConcepto, txtBoxFecha,txtBoxImporte;
     String idMovimiento;
-
+    Cuenta2 cuentaActual;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,18 +53,32 @@ public class formNuevoGasto extends AppCompatActivity {
         Intent intento=getIntent();
 
         TextView textoTitulo=findViewById(R.id.tituloCuenta);
-        textoTitulo.setText(intento.getStringExtra("titulo"));
 
-        numeroCuenta=intento.getLongExtra("idCuenta",0);
+        if(intento.getBooleanExtra("esNuevoGasto",true)){
+            cuentaActual=new Cuenta2((CuentaSerializable ) intento.getSerializableExtra("cuentaSerializable"));
 
-        idMovimiento=intento.getStringExtra("idMovimiento");
+            numeroCuenta=cuentaActual.id;
+            textoTitulo.setText(cuentaActual.titulo);
+
+        }else{//modificación de gasto
+            numeroCuenta=intento.getLongExtra("idCuenta",0);
+
+            idMovimiento=intento.getStringExtra("idMovimiento");
+        }
 
 
 
 
-        String ristraNombres=intento.getStringExtra("nombres");
+
+
+
+
+
+        //String ristraNombres=intento.getStringExtra("nombres");
 
         //Log.e("mensaje","ristra nombres:'"+ristraNombres+"'");
+
+        String ristraNombres=cuentaActual.getListaUnicoString();
 
         arrayNombres=new ArrayList<>();
 
@@ -90,7 +104,7 @@ public class formNuevoGasto extends AppCompatActivity {
     }//fin de la función on create
 
 
-    public void clickCrearElemento(View view){
+    public void clickCrearElemento(View view){//FALTAN LAS VALIDACIONES
 
         final String concepto;
         final Double importe;
@@ -121,13 +135,16 @@ public class formNuevoGasto extends AppCompatActivity {
 
                     myRef.child(Long.toString(numeroCuenta)).child("movimientos").child(idMovimiento).setValue(nuevoMovimiento);
 
+                    cuentaActual.addMovimiento(nuevoMovimiento);
 
 
                     dialog.dismiss();
 
                     Intent returnIntent=new Intent();
 
-                    recalcularYguardarImporteTotal();
+                    cuentaActual.calcularImporteTotal(true);
+
+                    //recalcularYguardarImporteTotal();
                     /*double nuevoImporte=cuentaTemp.importeTotal;
                     Log.e("mensaje","importe fuera de funcion:"+nuevoImporte+"€");
 
@@ -158,13 +175,16 @@ public class formNuevoGasto extends AppCompatActivity {
     }//fin de la función finCrearElemento
 
 
-    public void recalcularYguardarImporteTotal(){
+   /* public void recalcularYguardarImporteTotal(){
         Log.e ("mensaje","el numero de cuenta es:"+numeroCuenta);
         Cuenta cuentaTemp=new Cuenta(numeroCuenta,true,false);
 
-        cuentaTemp.calcularImporteTotal();
+        cuentaActual.
 
-    }
+
+        //cuentaTemp.calcularImporteTotal();
+
+    }*/
 
 
     public String crearIdConFecha(){

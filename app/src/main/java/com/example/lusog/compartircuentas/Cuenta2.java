@@ -2,6 +2,7 @@ package com.example.lusog.compartircuentas;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -279,6 +280,27 @@ public class Cuenta2 {
 
     public CuentaSerializable getCuentaSerializable(){
         return new CuentaSerializable(this);
+    }
+
+
+
+    public void calcularImporteTotal(boolean guardar){
+        importeTotal=0;
+        double nuevoImporte=0;
+
+
+        Log.e("mensaje","Calculando importe - importe anterior:"+importeTotal+"€");
+
+        for(Movimiento mov:movimientosCuenta){
+            importeTotal+=mov.cantidad;
+           // Log.e("mensaje","añadido importe de movimiento "+mov.toString());
+            //Log.e("mensaje","importeTotal:"+importeTotal+"€");
+        }
+
+        //redondeo por si acaso
+        importeTotal=(double) Math.round(importeTotal*100)/100;
+
+        if(guardar){ myRef.child(Long.toString(id)).child("importeTotal").setValue(importeTotal);}
     }
 
 }//fin de la clase persona2

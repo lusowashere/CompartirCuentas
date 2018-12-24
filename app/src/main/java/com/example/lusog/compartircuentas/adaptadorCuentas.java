@@ -80,10 +80,12 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
                 Intent intento=new Intent(context,formNuevoGasto.class);
 
                 intento.putExtra("idCuenta",listaCuentas.get(position).id);
-                intento.putExtra("nombres",listaCuentas.get(position).getListaUnicoString());
-                intento.putExtra("titulo",listaCuentas.get(position).titulo);
+                //intento.putExtra("cuentaSerializable",listaCuentas.get(position).getCuentaSerializable());
+                intento.putExtra("esNuevoGasto",true);
+                //intento.putExtra("nombres",listaCuentas.get(position).getListaUnicoString());
+                //intento.putExtra("titulo",listaCuentas.get(position).titulo);
                 //esto lo puse para algo, pero ya me acordaré de qué
-                intento.putExtra("idMovimiento","");
+                //intento.putExtra("idMovimiento","");
 
                 //context.startActivity(intento);
 
