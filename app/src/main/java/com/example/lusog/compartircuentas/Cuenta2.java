@@ -267,12 +267,12 @@ public class Cuenta2 {
         double importePromedio=getImportePromedio();
 
         for(Persona p:listaNombres){
-            if(nuevoMovimiento.Nombre.equals(p.nombre)){//se le añade también el movimiento a la persona
+            /*if(nuevoMovimiento.Nombre.equals(p.nombre)){//se le añade también el movimiento a la persona
                 p.addMovimiento(nuevoMovimiento);
             }
 
             //sea o no el afectado, le recalculo la deuda en base al nuevo importe promedio
-            p.calcularDeuda(importePromedio);
+            p.calcularDeuda(importePromedio); */
         }
 
 

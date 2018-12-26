@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.icu.text.IDNA;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.BufferedReader;
@@ -29,7 +31,8 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     //public ArrayList<Cuenta> listaCuentasUsuario;
-    ArrayList<Cuenta2> listaCuentasUsuario;
+    //ArrayList<Cuenta2> listaCuentasUsuario;
+    ArrayList<InformacionCuenta> listaCuentasUsuario;
     public String rutaArchivoCuentasUsuario;
 
     public FirebaseDatabase database;
@@ -77,30 +80,24 @@ public class MainActivity extends AppCompatActivity {
 
                 if (!idLista.equals("")) {
 
-                    //Log.e("Mensaje", "Intentando leer cuenta con id'" + idLista + "'");
-
-                    /*
-                    myRef.child(idLista).addListenerForSingleValueEvent(new ValueEventListener() {
+                    myRef.child(idLista).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            Long id;
-                            String titulo, descripcion, ristraNombres;
-                            Double importeTotal;
-
-                            id = (Long) Long.parseLong(dataSnapshot.child("id").getValue().toString());
-                            titulo = (String) dataSnapshot.child("titulo").getValue();
-                            descripcion = (String) dataSnapshot.child("descripcion").getValue();
-                            importeTotal = (Double) Double.parseDouble(dataSnapshot.child("importeTotal").getValue().toString());
-                            //Log.e("mensaje","importe total:"+importeTotal+"€");
-                            ristraNombres = (String) dataSnapshot.child("participantes").getValue();
-
-                            Cuenta nuevaCuenta = new Cuenta(id, titulo, descripcion);
-                            nuevaCuenta.importeTotal = importeTotal;
-                            nuevaCuenta.setListaFromUnicoString(ristraNombres);
-
-                            listaCuentasUsuario.add(nuevaCuenta);
-
-                            //actualizarRecyclerView();
+                            Long idCambiado=Long.parseLong( dataSnapshot.child("id").getValue().toString());
+                            boolean cuentaExiste=false;
+                            for(InformacionCuenta cuentas:listaCuentasUsuario){
+                                if(cuentas.id==idCambiado){
+                                    cuentaExiste=true;
+                                    cuentas.titulo=dataSnapshot.child("titulo").getValue().toString();
+                                    cuentas.descripcion=dataSnapshot.child("descripcion").getValue().toString();
+                                    cuentas.importeTotal=Double.parseDouble( dataSnapshot.child("importeTotal").getValue().toString());
+                                }
+                            }
+                            if(!cuentaExiste){//creamos la cuenta
+                                InformacionCuenta info=new InformacionCuenta(idCambiado,dataSnapshot.child("titulo").getValue().toString()
+                                        ,dataSnapshot.child("descripcion").getValue().toString(),Double.parseDouble( dataSnapshot.child("importeTotal").getValue().toString()));
+                                listaCuentasUsuario.add(info);
+                            }
 
                             recicler.getAdapter().notifyDataSetChanged();
 
@@ -110,20 +107,10 @@ public class MainActivity extends AppCompatActivity {
                         public void onCancelled(@NonNull DatabaseError databaseError) {
 
                         }
-                    });*/
-
-                    //listaCuentasUsuario.add(new Cuenta(Long.parseLong(idLista),false,false));//en este no necesito leer los movimientos
-                    //listaCuentasUsuario.add(new Cuenta2(Long.parseLong(idLista)));
-
-                    Cuenta2 aux=new Cuenta2();
-                    aux.id=Long.parseLong(idLista);
-
-                    listaCuentasUsuario.add(aux);
+                    });
 
 
                 }
-
-                //Log.e("mensaje","parece que se ha leido bien el archivo"+cuenta);
 
 
             }
@@ -259,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 int i=0;
                 int posicion=-1;
 
-                for(Cuenta2 c:listaCuentasUsuario){
+                for(InformacionCuenta c:listaCuentasUsuario){
                     if(c.id==idListaEliminada){
                         posicion=i;
                     }
@@ -285,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
         boolean yaEstaba=false;
         boolean addPuntoComa=false;
 
-        for(Cuenta2 c:listaCuentasUsuario){
+        for(InformacionCuenta c:listaCuentasUsuario){
 
             if(addPuntoComa){
                 cuentasActuales+=";";
@@ -308,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
                 OutputStreamWriter osw=new OutputStreamWriter(openFileOutput(rutaArchivoCuentasUsuario,Context.MODE_PRIVATE));
                 osw.write(cuentasActuales);
                 osw.close();
-                listaCuentasUsuario.add(new Cuenta2(idNuevo));
+                //listaCuentasUsuario.add(new Cuenta2(idNuevo));
                 recicler.getAdapter().notifyDataSetChanged();
             }catch (Exception e){
                 Log.e("mensaje","no se ha podido guardar el archivo");

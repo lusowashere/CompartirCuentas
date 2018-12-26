@@ -18,12 +18,10 @@ import java.util.ArrayList;
 public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.ViewHolderPersonas> {
 
     ArrayList<Persona> listaPersonas;
-    double costePromedio;
     long numeroCuenta;
 
-    public AdaptadorPersonas(ArrayList<Persona> listaPersonas, double promedio,long nCuenta) {
+    public AdaptadorPersonas(ArrayList<Persona> listaPersonas, long nCuenta) {
         this.listaPersonas = listaPersonas;
-        costePromedio=promedio;
         numeroCuenta=nCuenta;
     }
 
@@ -37,15 +35,15 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
     @Override
     public void onBindViewHolder(@NonNull ViewHolderPersonas holder, final int position) {
         holder.labelNombre.setText(listaPersonas.get(position).nombre);
-        holder.labelMovimientos.setText(listaPersonas.get(position).numeroMovimientos+" gastos");
+        holder.labelMovimientos.setText(listaPersonas.get(position).getNumeroMovimientos()+" gastos");
         holder.labelTotal.setText(listaPersonas.get(position).getTotalPagado());
 
 
-        holder.labelDeuda.setText(listaPersonas.get(position).getDeuda());
+        holder.labelDeuda.setText(listaPersonas.get(position).getStringDeuda());
         //lo pinto del color del tipo de deuda
-        if(listaPersonas.get(position).deuda>0){
+        if(listaPersonas.get(position).getDeuda()>0){
             holder.labelDeuda.setTextColor(Color.RED);
-        }else if(listaPersonas.get(position).deuda<0){
+        }else if(listaPersonas.get(position).getDeuda()<0){
             holder.labelDeuda.setTextColor(Color.rgb(0, 102, 0));
         }
 
@@ -63,7 +61,8 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
                 intento.putExtra("deuda",listaPersonas.get(position).getDeuda(costePromedio));
                 */
 
-                intento.putExtra("persona",listaPersonas.get(position));
+                intento.putExtra("persona",listaPersonas.get(position).nombre);
+                intento.putExtra("participantes",getRistraNombres());
 
                 v.getContext().startActivity(intento);
 
@@ -72,6 +71,19 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
 
 
     }
+
+    public String getRistraNombres(){
+        String ristra="";
+        for(Persona p:listaPersonas){
+            if(ristra=="") {
+                ristra=p.nombre;
+            }else {
+                ristra = ristra + ";" + p.nombre;
+            }
+        }
+        return ristra;
+    }
+
 
     @Override
     public int getItemCount() {

@@ -23,14 +23,15 @@ import java.util.ArrayList;
 public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.ViewHolderCuentas> {
 
     //ArrayList<Cuenta> listaCuentas;
-    ArrayList<Cuenta2> listaCuentas;
+    //ArrayList<Cuenta2> listaCuentas;
+    ArrayList<InformacionCuenta> listaCuentas;
     private final Context context;
 
     FirebaseDatabase database;
     DatabaseReference myRef;
 
 
-    public adaptadorCuentas(ArrayList<Cuenta2> listaCuentas, Context contexto) {
+    public adaptadorCuentas(ArrayList<InformacionCuenta> listaCuentas, Context contexto) {
         this.listaCuentas = listaCuentas;
         this.context=contexto;
 
@@ -50,11 +51,9 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolderCuentas holder, final int position) {
-        //holder.txtTitulo.setText(listaCuentas.get(position).titulo);
-        //holder.txtImporte.setText(Double.toString( listaCuentas.get(position).importeTotal)+"€");
+        holder.txtTitulo.setText(listaCuentas.get(position).titulo);
+        holder.txtImporte.setText(Double.toString( listaCuentas.get(position).importeTotal)+"€");
 
-        listaCuentas.get(position).addLabel("titulo",holder.txtTitulo);
-        listaCuentas.get(position).addLabel("importeTotal",holder.txtImporte);
 
         holder.buttVerDetalles.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,7 +62,7 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
                 Intent intento=new Intent(context,pant_principal_cuenta.class);
 
                 intento.putExtra("idCuenta",listaCuentas.get(position).id);
-                //intento.putExtra("cuenta",listaCuentas.get(position).getCuentaSerializable());
+
 
                 ((Activity) context).startActivityForResult(intento,3);
 
@@ -80,55 +79,16 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
                 Intent intento=new Intent(context,formNuevoGasto.class);
 
                 intento.putExtra("idCuenta",listaCuentas.get(position).id);
-                //intento.putExtra("cuentaSerializable",listaCuentas.get(position).getCuentaSerializable());
+
                 intento.putExtra("esNuevoGasto",true);
-                //intento.putExtra("nombres",listaCuentas.get(position).getListaUnicoString());
-                //intento.putExtra("titulo",listaCuentas.get(position).titulo);
-                //esto lo puse para algo, pero ya me acordaré de qué
-                //intento.putExtra("idMovimiento","");
 
-                //context.startActivity(intento);
-
-                //Activity a=new Activity();
-                //a.startActivityForResult(intento,2);
 
                 ((Activity) context).startActivityForResult(intento,2);
 
-                //context.startActivity(new Intent(context,formNuevoGasto.class));
-
             }
         });
 
-/*
-        myRef.child(Long.toString(listaCuentas.get(position).id)).child("importeTotal").addValueEventListener(new ValueEventListener()
-        {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                listaCuentas.get(position).importeTotal=Double.parseDouble( dataSnapshot.getValue().toString());
-                holder.txtImporte.setText(dataSnapshot.getValue().toString()+"€");
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        myRef.child(Long.toString(listaCuentas.get(position).id)).child("titulo").addValueEventListener(new ValueEventListener()
-        {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.e("mensaje","se va a intentar leer el título del id:"+Long.toString( listaCuentas.get(position).id));
-                listaCuentas.get(position).titulo=dataSnapshot.getValue().toString();
-                holder.txtTitulo.setText(dataSnapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-*/
     }
 
     @Override

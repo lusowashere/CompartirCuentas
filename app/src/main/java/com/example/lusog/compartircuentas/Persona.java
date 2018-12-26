@@ -1,44 +1,25 @@
 package com.example.lusog.compartircuentas;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-
 public class Persona implements Serializable {
     public String nombre;
-    public Double totalPagado, deuda;
-    public ArrayList<Movimiento> movimientos;
+    public Double totalPagado, totalBeneficiado;
     public int numeroMovimientos;
 
     public Persona(String nombre){
         this.nombre=nombre;
-        movimientos=new ArrayList<>();
         totalPagado=0.0;
-        deuda=0.0;
+        totalBeneficiado=0.0;
         numeroMovimientos=0;
     }
 
-    public void addMovimiento(Movimiento nuevoMovimiento){
-        movimientos.add(nuevoMovimiento);
-        calcularTotalPagado_totalMovimientos();
-        //calcularDeuda(importePromedio);
+
+
+    public Double getDeuda(){
+        return totalBeneficiado-totalPagado;
     }
 
 
-    public void calcularDeuda(double importePromedio){
-        deuda=importePromedio-totalPagado;
-    }
-
-    private void calcularTotalPagado_totalMovimientos(){
-
-        double total=0;
-
-        for(Movimiento m:movimientos){
-            total+=m.cantidad;
-        }
-
-        totalPagado=total;
-        numeroMovimientos= movimientos.size();
-    }
 
     public String getTotalPagado(){//hace redondeo
 
@@ -46,18 +27,20 @@ public class Persona implements Serializable {
 
     }
 
+    public int getNumeroMovimientos(){return  numeroMovimientos;}
 
-    public String getDeuda(){
+
+    public String getStringDeuda(){
 
         //deuda=importePromedio-totalPagado;
 
-        if(deuda>=0){
+        if(getDeuda()>=0){
             //return "Debe "+ Double.toString(Math.round(100*deuda)/100)+"€";
-            return "Debe "+String.format("%.2f",deuda)+"€";
+            return "Debe "+String.format("%.2f",getDeuda())+"€";
         }
         else{
             //return "Se le deben "+Double.toString(Math.round(-100*deuda)/100)+"€";
-            return "Se le deben "+String.format("%.2f",(-deuda))+"€";
+            return "Se le deben "+String.format("%.2f",(-getDeuda()))+"€";
         }
     }
 }

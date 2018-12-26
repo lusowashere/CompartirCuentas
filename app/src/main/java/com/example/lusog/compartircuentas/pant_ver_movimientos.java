@@ -27,11 +27,14 @@ public class pant_ver_movimientos extends AppCompatActivity {
     FirebaseDatabase database;
     DatabaseReference myRef;
     RecyclerView recyclerMovimientos;
-    String nombrePersona_o_cuenta;
-    ArrayList<Movimiento> listaMovimientos;
+    String nombrePersona,tituloCuenta;
+    ArrayList<Movimiento> listaMovimientos; //aquí la separamos para diferenciar los que son de todos de los que son sólo del usuario
     boolean sonMovimientosPersona;
 
-    Cuenta2 cuenta;
+    TextView textoTitulo,textoMovimientos,textoTotal,textoDeuda;
+
+
+    Cuenta cuentaActual;
     Persona persona;
 
     //Cuenta cuentaActual;
@@ -42,12 +45,12 @@ public class pant_ver_movimientos extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pant_ver_movimientos);
 
-/*
+
         database=FirebaseDatabase.getInstance();
         myRef=database.getReference("listas");
 
         listaMovimientos=new ArrayList<>();
-*/
+
         Intent intento=getIntent();
 
         //cuentaActual=(Cuenta) intento.getSerializableExtra("cuenta");
@@ -56,18 +59,22 @@ public class pant_ver_movimientos extends AppCompatActivity {
 
         sonMovimientosPersona=intento.getBooleanExtra("sonMovimientosPersona",true);
 
-        TextView textoTitulo=findViewById(R.id.labelTitulo);
-        TextView textoMovimientos=findViewById(R.id.labelMovimientos);
-        TextView textoTotal=findViewById(R.id.labelImporteTotal);
-        TextView textoDeuda=findViewById(R.id.labelDeuda);
+        textoTitulo=findViewById(R.id.labelTitulo);
+        textoMovimientos=findViewById(R.id.labelMovimientos);
+        textoTotal=findViewById(R.id.labelImporteTotal);
+        textoDeuda=findViewById(R.id.labelDeuda);
 
         recyclerMovimientos=findViewById(R.id.reciclerViewMovimientos);
 
 
+
+
         if(sonMovimientosPersona){
-            persona=(Persona) intento.getSerializableExtra("persona");
-            listaMovimientos=persona.movimientos;
-            textoTitulo.setText(persona.nombre);
+            nombrePersona= intento.getStringExtra("persona");
+            listaMovimientos=new ArrayList<>();
+            textoTitulo.setText(nombrePersona);
+            cuentaActual=new Cuenta(numeroCuenta,"","");
+            /*
             textoMovimientos.setText(String.valueOf(persona.numeroMovimientos)+" movimientos");
             textoTotal.setText(String.format("%.2f",persona.totalPagado)+"€");
             textoDeuda.setText(persona.getDeuda());
@@ -76,84 +83,104 @@ public class pant_ver_movimientos extends AppCompatActivity {
             }else{
                 textoDeuda.setTextColor(Color.rgb(0, 102, 0));
             }
+            */
         }else{
-            cuenta=new Cuenta2((CuentaSerializable) intento.getSerializableExtra("cuenta"));
-            listaMovimientos=cuenta.movimientosCuenta;
-            textoTitulo.setText( cuenta.titulo);
-            textoTotal.setText(String.format("%.2f",cuenta.importeTotal)+"€");
-            textoDeuda.setVisibility(View.INVISIBLE);
-            textoMovimientos.setText(String.valueOf(cuenta.movimientosCuenta.size())+" movimientos");
+            tituloCuenta=intento.getStringExtra("tituloCuenta");
+            textoTitulo.setText(tituloCuenta);
+            cuentaActual=new Cuenta(numeroCuenta,tituloCuenta,"");
+
         }
 
-
-        //numeroCuenta=cuentaActual.id;
-
-        //nombrePersona_o_cuenta=intento.getStringExtra( "nombrePersona");
-
-
-
-
+        cuentaActual.setListaFromUnicoString(intento.getStringExtra("participantes"));
 
 
         recyclerMovimientos.setLayoutManager(new  LinearLayoutManager(this));
-        AdaptadorMovimientos adapter=new AdaptadorMovimientos(  listaMovimientos,numeroCuenta);
-        recyclerMovimientos.setAdapter(adapter);
-/*
-        textoTitulo.setText(nombrePersona_o_cuenta);
-        textoMovimientos.setText(Integer.toString( intento.getIntExtra("nMovimientos",0))+" movimientos");
 
-        Query myQuery;
+        AdaptadorMovimientos adapter;
 
-        if(intento.getBooleanExtra("sonMovimientosPersona",false)){
-            textoTotal.setText(intento.getStringExtra("totalPagado"));
-            textoDeuda.setText(intento.getStringExtra("deuda"));
-            myQuery=myRef.child(Long.toString( numeroCuenta)).child("movimientos").orderByChild("Nombre").equalTo(nombrePersona_o_cuenta);
-        }else{
-            textoTotal.setText(String.format("%.2f", intento.getDoubleExtra("totalPagado",0))+ "€");
-
-            textoDeuda.setVisibility(View.INVISIBLE);
-            //textoTotal.setText(String.format("%.2f", cuentaActual.getImporteTotal()));
-
-            //listaMovimientos=cuentaActual.movimientosCuenta;
-
-            //recyclerMovimientos.getAdapter().notifyDataSetChanged();
-
-
-            myQuery=myRef.child(Long.toString(numeroCuenta)).child("movimientos");
+        if(sonMovimientosPersona) {
+            adapter = new AdaptadorMovimientos(listaMovimientos, numeroCuenta);
+        }
+        else{
+             adapter=new AdaptadorMovimientos(cuentaActual.movimientosCuenta,numeroCuenta);
         }
 
+        recyclerMovimientos.setAdapter(adapter);
 
-
-
-
-        myQuery.addChildEventListener(new ChildEventListener() {
+        myRef.child(numeroCuenta.toString()).child("movimientos").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Movimiento nuevoMov=dataSnapshot.getValue(Movimiento.class);
-                listaMovimientos.add(nuevoMov);
-                recyclerMovimientos.getAdapter().notifyDataSetChanged();
-                Log.e("mensaje","leido movimiento "+nuevoMov.toString());
+                String disfrutantes;
+                if(dataSnapshot.hasChild("disfrutantes")){
+                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                }else{
+                    disfrutantes=cuentaActual.getListaUnicoString();
+                }
+
+                Movimiento nuevoMovimiento=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
+                        dataSnapshot.child("concepto").getValue().toString(),
+                        dataSnapshot.child("Nombre").getValue().toString(),
+                        dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                        dataSnapshot.child("fecha").getValue().toString()
+                );
+
+                cuentaActual.addMovimiento(nuevoMovimiento);
+
+                if(sonMovimientosPersona && nuevoMovimiento.pagador.equals(nombrePersona)){//se añade a la lista de movimientos
+                    listaMovimientos.add(nuevoMovimiento);
+                }
+
+                actualizarInformacion();
 
             }
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                String id=dataSnapshot.child("id").getValue().toString();
+                String disfrutantes;
+                if(dataSnapshot.hasChild("disfrutantes")){
+                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                }else{
+                    disfrutantes=cuentaActual.getListaUnicoString();
+                }
 
-                Movimiento movModificado=dataSnapshot.getValue(Movimiento.class);
+                Movimiento movimientoModificado=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
+                        dataSnapshot.child("concepto").getValue().toString(),
+                        dataSnapshot.child("Nombre").getValue().toString(),
+                        dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                        dataSnapshot.child("fecha").getValue().toString()
+                );
 
-                for(Movimiento mov:listaMovimientos){
-                    if(id.equals(mov.id)){
-                        mov.copiarDeOtroMovimiento(movModificado);
+                cuentaActual.modificarMovimiento(movimientoModificado);
+
+                if(sonMovimientosPersona){
+                    listaMovimientos.clear();
+                    for(Movimiento mov:cuentaActual.movimientosCuenta){
+                        if(mov.pagador.equals(nombrePersona)){
+                            listaMovimientos.add(mov);
+                        }
                     }
                 }
 
-                recyclerMovimientos.getAdapter().notifyDataSetChanged();
+                actualizarInformacion();
+
 
             }
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                String idRemovido=dataSnapshot.child("id").getValue().toString();
+                cuentaActual.quitarMovimiento(idRemovido);
+
+                if(sonMovimientosPersona){
+                    listaMovimientos.clear();
+                    for(Movimiento mov:cuentaActual.movimientosCuenta){
+                        if(mov.pagador.equals(nombrePersona)){
+                            listaMovimientos.add(mov);
+                        }
+                    }
+                }
+
+                actualizarInformacion();
 
             }
 
@@ -167,6 +194,32 @@ public class pant_ver_movimientos extends AppCompatActivity {
 
             }
         });
-*/
+
+
+
+
+    }//fin de la función onCreate
+
+
+    public void actualizarInformacion(){
+        if(sonMovimientosPersona) {
+            textoMovimientos.setText(String.valueOf(listaMovimientos.size()) + " movimientos");
+            textoTotal.setText(cuentaActual.getPersona(nombrePersona).getTotalPagado());
+            textoDeuda.setText(cuentaActual.getPersona(nombrePersona).getStringDeuda());
+            if(cuentaActual.getPersona(nombrePersona).getDeuda()>0){
+                textoDeuda.setTextColor(Color.RED);
+            }else{
+                textoDeuda.setTextColor(Color.rgb(0, 102, 0));
+            }
+
+        }else{
+            textoMovimientos.setText(cuentaActual.getNumeroMovimientos()+" movimientos");
+            textoTotal.setText(String.format("%.2f",cuentaActual.getImporteTotal())+"€");
+            textoDeuda.setVisibility(View.INVISIBLE);
+        }
+        recyclerMovimientos.getAdapter().notifyDataSetChanged();
     }
+
+
+
 }

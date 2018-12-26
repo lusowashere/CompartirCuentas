@@ -3,6 +3,8 @@ package com.example.lusog.compartircuentas;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.constraint.solver.widgets.Snapshot;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,8 +16,11 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,7 +38,9 @@ public class formNuevoGasto extends AppCompatActivity {
     String nombre;
     EditText txtBoxConcepto, txtBoxFecha,txtBoxImporte;
     String idMovimiento;
-    Cuenta2 cuentaActual;
+    //Cuenta2 cuentaActual;
+    Cuenta cuentaActual;
+    boolean esNuevoGasto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,18 +61,54 @@ public class formNuevoGasto extends AppCompatActivity {
 
         TextView textoTitulo=findViewById(R.id.tituloCuenta);
 
-        if(intento.getBooleanExtra("esNuevoGasto",true)){
-            cuentaActual=new Cuenta2((CuentaSerializable ) intento.getSerializableExtra("cuentaSerializable"));
 
-            numeroCuenta=cuentaActual.id;
-            textoTitulo.setText(cuentaActual.titulo);
+        esNuevoGasto=intento.getBooleanExtra("esNuevoGasto",true);
 
-        }else{//modificación de gasto
-            numeroCuenta=intento.getLongExtra("idCuenta",0);
+        numeroCuenta=intento.getLongExtra("idCuenta",0);
 
+
+        if(esNuevoGasto){
+            idMovimiento=crearIdConFecha();
+        }else{
             idMovimiento=intento.getStringExtra("idMovimiento");
         }
 
+
+
+
+        myRef=FirebaseDatabase.getInstance().getReference("listas").child(numeroCuenta.toString());
+
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                cuentaActual=new Cuenta(numeroCuenta,dataSnapshot.child("titulo").getValue().toString()
+                        ,dataSnapshot.child("descripcion").getValue().toString());
+
+                cuentaActual.setListaFromUnicoString(dataSnapshot.child("participantes").getValue().toString());
+
+                for (DataSnapshot mov:dataSnapshot.child("movimientos").getChildren()) {
+                    //ver quienes son los disfrutantes
+                    String disfrutantes;
+                    if(mov.hasChild("disfrutantes")){
+                        disfrutantes=mov.child("disfrutantes").getValue().toString();
+                    }else{
+                        disfrutantes=dataSnapshot.child("participantes").getValue().toString();//si no se han definido, son todos
+                    }
+
+                    Movimiento nuevoMovimiento=new Movimiento(Double.parseDouble( mov.child("cantidad").getValue().toString())
+                            ,mov.child("concepto").getValue().toString(),mov.child("Nombre").getValue().toString()
+                            ,mov.child("id").getValue().toString(),disfrutantes,mov.child("fecha").getValue().toString());
+
+                    cuentaActual.addMovimiento(nuevoMovimiento);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
 
 
@@ -131,7 +174,8 @@ public class formNuevoGasto extends AppCompatActivity {
 
                     idMovimiento=crearIdConFecha();
 
-                    Movimiento nuevoMovimiento=new Movimiento(importe,concepto,comboBoxNombres.getSelectedItem().toString(),fecha,idMovimiento);
+                    //por ahora pongo como disfrutantes a todos
+                    Movimiento nuevoMovimiento=new Movimiento(importe,concepto,comboBoxNombres.getSelectedItem().toString(),idMovimiento,cuentaActual.getListaUnicoString(),fecha);
 
                     myRef.child(Long.toString(numeroCuenta)).child("movimientos").child(idMovimiento).setValue(nuevoMovimiento);
 
@@ -142,7 +186,9 @@ public class formNuevoGasto extends AppCompatActivity {
 
                     Intent returnIntent=new Intent();
 
-                    cuentaActual.calcularImporteTotal(true);
+                    //cuentaActual.calcularImporteTotal(true);
+                    cuentaActual.guardarImporteTotal();
+
 
                     //recalcularYguardarImporteTotal();
                     /*double nuevoImporte=cuentaTemp.importeTotal;

@@ -37,7 +37,7 @@ public class AdaptadorMovimientos extends RecyclerView.Adapter<AdaptadorMovimien
         holder.labelNombre.setText(listaMovimientos.get(position).concepto);
         holder.labelFecha.setText(listaMovimientos.get(position).fecha);
         holder.labelImporte.setText(String.format("%.2f", listaMovimientos.get(position).cantidad)+"€");
-        holder.labelPersona.setText(listaMovimientos.get(position).Nombre);
+        holder.labelPersona.setText(listaMovimientos.get(position).pagador);
 
         holder.buttEliminar.setOnClickListener(new View.OnClickListener() {
             @Override

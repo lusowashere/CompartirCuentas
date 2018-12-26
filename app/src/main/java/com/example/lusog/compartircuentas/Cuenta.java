@@ -15,6 +15,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 
 class Cuenta implements Serializable {
     //private ArrayList<String> listaNombres;
@@ -23,88 +24,14 @@ class Cuenta implements Serializable {
     public long id;
     public String titulo, descripcion;
     public ArrayList<Movimiento> movimientosCuenta;
-    public double importeTotal;
-
-
-    private TextView textoTitulo, textoImporteTotal,textoNpersonas,textoCostePromedio;
-    private RecyclerView recycler;
+    //public double importeTotal;
 
 
     private FirebaseDatabase database;
     private DatabaseReference myRef;
 
     /////CONSTRUCTORES
-    public Cuenta(final long idCuenta, final boolean leerMovimientos, final boolean rellenarTextViews){//constructor que toma únicamente el id y lee toda la información de firebase
-        database=FirebaseDatabase.getInstance();
-        myRef=database.getReference("listas");
 
-        movimientosCuenta=new ArrayList<>();
-
-        id=idCuenta;
-
-        listaNombres=new ArrayList<>();
-
-        myRef.child(Long.toString(idCuenta)).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                //id=Long.parseLong( dataSnapshot.child("id").getValue().toString());
-
-                Log.e("mensaje:","id que estoy leyendo:"+idCuenta);
-
-                //id=idCuenta;
-                titulo=dataSnapshot.child("titulo").getValue().toString();
-                descripcion=dataSnapshot.child("descripcion").getValue().toString();
-                importeTotal=Double.parseDouble(dataSnapshot.child("importeTotal").getValue().toString());
-
-                //añado los nombres
-                String ristraNombres=dataSnapshot.child("participantes").getValue().toString();
-                listaNombres=new ArrayList<>();
-                for(String n:ristraNombres.split(";")){
-                    Log.e("mensaje","añadir nombre '"+n+"'");
-                    listaNombres.add(new Persona(n));
-                }
-
-
-
-                //si es la pantalla principal, relleno los textBoxes
-                if(rellenarTextViews) {
-                    textoTitulo.setText(titulo);
-                    textoImporteTotal.setText(String.format("%.2f",importeTotal)+"€");
-                    textoNpersonas.setText(listaNombres.size()+" personas");
-                    textoCostePromedio.setText(String.format("%.2f",getImportePromedio())+"€/persona");
-                    AdaptadorPersonas adapter=new AdaptadorPersonas(listaNombres,getImportePromedio(),idCuenta);
-                    recycler.setAdapter(adapter);
-                }
-
-                //Log.e("mensaje","Leida cuenta "+id+" con titulo '"+titulo+"'");
-
-                if(leerMovimientos) {
-
-                    //añado los movimientos
-                    //movimientosCuenta=new ArrayList<>();
-                    for (DataSnapshot postSnapshot : dataSnapshot.child("movimientos").getChildren()) {
-                        Movimiento m = postSnapshot.getValue(Movimiento.class);
-                        addMovimiento(m);
-                        //Log.e("mensaje","leido movimiento "+m.toString());
-
-                        if(rellenarTextViews){recycler.getAdapter().notifyDataSetChanged();}
-
-                    }
-
-
-                    calcularImporteTotal();
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-    }
 
 
     public Cuenta(long id, String titulo, String descripcion){
@@ -136,33 +63,50 @@ class Cuenta implements Serializable {
     ///METODOS
 
 
+    public long getId() {
+        return id;
+    }
 
-    public void calcularImporteTotal(){
-        importeTotal=0;
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public void guardarImporteTotal(){
+
+        myRef.child(Long.toString(id)).child("importeTotal").setValue(getImporteTotal());
+    }
+
+    public double getImporteTotal(){
+        double importeTotal=0;
         double nuevoImporte=0;
 
 
         Log.e("mensaje","Calculando importe - importe anterior:"+importeTotal+"€");
 
         for(Movimiento mov:movimientosCuenta){
-            importeTotal+=mov.cantidad;
+            importeTotal+=mov.cantidad;/*
             Log.e("mensaje","añadido importe de movimiento "+mov.toString());
-            Log.e("mensaje","importeTotal:"+importeTotal+"€");
+            Log.e("mensaje","importeTotal:"+importeTotal+"€");*/
         }
 
         //redondeo por si acaso
         importeTotal=(double) Math.round(importeTotal*100)/100;
-
-        guardarImporteTotal();
-        Log.e("mensaje","importeTotaldentrodefuncion:"+importeTotal+"€");
-    }
-
-    public void guardarImporteTotal(){
-
-        myRef.child(Long.toString(id)).child("importeTotal").setValue(importeTotal);
-    }
-
-    public double getImporteTotal(){
         return  importeTotal;
     }
 
@@ -229,9 +173,9 @@ class Cuenta implements Serializable {
 
         if(listaNombres.size()>0) {
 
-            return (double)  Math.round(100*importeTotal / listaNombres.size())/100;
+            return (double)  Math.round(100*getImporteTotal() / getNumeroPersonas())/100;
         }else{
-            return importeTotal;
+            return getImporteTotal();
         }
     }
 
@@ -239,36 +183,75 @@ class Cuenta implements Serializable {
         return listaNombres.size();
     }
 
-    //esto se utiliza sólamente cuando se está leyendo toda la info para la pantalla general
-    public void setTextViews(TextView labelTitulo, TextView labelImporte, TextView labelPersonas, TextView labelPromedio, RecyclerView reciclerNombres){
-        textoTitulo=labelTitulo;
-        textoImporteTotal=labelImporte;
-        textoNpersonas=labelPersonas;
-        textoCostePromedio=labelPromedio;
 
-        recycler=reciclerNombres;
+    public void calcular_pagado_y_deudas(){
 
+        //ponemos todo a 0
+        for(Persona p:listaNombres){
+            p.totalPagado=0.0;
+            p.totalBeneficiado=0.0;
+            p.numeroMovimientos=0;
+        }
 
+        for(Movimiento mov:movimientosCuenta){
+            for(Persona pers:listaNombres){
+                if(mov.pagador.equals(pers.nombre)){//es el pagador
+                    pers.totalPagado+=mov.cantidad;
+                    pers.numeroMovimientos++;
+                }
 
-        //aquí además le asigno la lista
-        /*AdaptadorPersonas adapter=new AdaptadorPersonas(listaNombres);
-        recycler.setAdapter(adapter);*/
-
+                if(mov.esDisfrutante(pers.nombre)){
+                    pers.totalBeneficiado+=mov.getCantidadPromedio();
+                }
+            }
+        }
     }
+
 
 
     public void addMovimiento(Movimiento nuevoMovimiento){//añado movimientos a la lista y a la gente a la que lo ha hecho
         movimientosCuenta.add(nuevoMovimiento);
+        calcular_pagado_y_deudas();
 
-
-
-        for(Persona p:listaNombres){
-            if(nuevoMovimiento.Nombre.equals(p.nombre)){//se le añade también el movimiento a la persona
-                p.addMovimiento(nuevoMovimiento/*,getImportePromedio()*/);
-            }
-        }
 
     }
 
+
+    public void quitarMovimiento(String idMovimientoQuitado){
+        Iterator<Movimiento> iter=movimientosCuenta.iterator();
+
+        while(iter.hasNext()){
+            if(iter.next().id.equals(idMovimientoQuitado)){
+                iter.remove();
+            }
+        }
+
+        calcular_pagado_y_deudas();
+
+    }
+
+    public void modificarMovimiento(Movimiento movimientoModificado){
+        for(Movimiento m:movimientosCuenta){
+            if(m.id.equals(movimientoModificado.id)){
+                m.copiarDeOtroMovimiento(movimientoModificado);
+                calcular_pagado_y_deudas();
+            }
+        }
+    }
+
+    public int getNumeroMovimientos(){return movimientosCuenta.size();}
+
+    public Persona getPersona(String nombrePersona){
+
+        for(Persona pers:listaNombres){
+            if(pers.nombre.equals(nombrePersona)){
+                return pers;
+            }
+        }
+
+
+        return new Persona("");
+
+    }
 
 }

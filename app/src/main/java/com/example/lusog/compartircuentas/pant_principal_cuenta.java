@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,16 +19,25 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
 public class pant_principal_cuenta extends AppCompatActivity {
 
-    //public Cuenta cuentaActual;
-    public Cuenta2 cuentaActual;
+    public Cuenta cuentaActual;
+    //public Cuenta2 cuentaActual;
     TextView labelTitulo, labelImporteTotal, labelPersonas, labelPromedio;
     RecyclerView recicler;
+
+    DatabaseReference myRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +53,8 @@ public class pant_principal_cuenta extends AppCompatActivity {
 
         //cuentaActual=new Cuenta2( (CuentaSerializable)  intento.getSerializableExtra("cuenta"));
 
-        cuentaActual=new Cuenta2(idCuenta);
 
 
-        //con la info, relleno los cuatro textView
         labelTitulo=(TextView) findViewById(R.id.labelTitulo);
         labelImporteTotal=(TextView) findViewById(R.id.labelImporteTotal);
         labelPersonas=(TextView) findViewById(R.id.labelNumeroPersonas);
@@ -53,11 +62,102 @@ public class pant_principal_cuenta extends AppCompatActivity {
         recicler=(RecyclerView) findViewById(R.id.recyclerViewNombres);
 
 
+        cuentaActual=new Cuenta(idCuenta,"","");//le pondré el título luego
+
+        myRef=FirebaseDatabase.getInstance().getReference("listas").child(idCuenta.toString());
+
+        recicler.setLayoutManager(new LinearLayoutManager(this));
+        //cuentaActual.setTextViews(labelTitulo,labelImporteTotal,labelPersonas,labelPromedio,recicler);
+        AdaptadorPersonas adapter=new AdaptadorPersonas(cuentaActual.listaNombres,cuentaActual.id);
+        recicler.setAdapter(adapter);
+
+        //listener inicial para  la información general
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                cuentaActual.setTitulo(dataSnapshot.child("titulo").getValue().toString());
+                cuentaActual.setTitulo(dataSnapshot.child("descripcion").getValue().toString());
+                cuentaActual.setListaFromUnicoString(dataSnapshot.child("participantes").getValue().toString());
+
+                labelTitulo.setText(cuentaActual.getTitulo());
+                labelPersonas.setText(cuentaActual.getNumeroPersonas()+" participantes");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
+
+        //listener de los movimientos para definir a las personas
+        myRef.child("movimientos").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String disfrutantes;
+                if(dataSnapshot.hasChild("disfrutantes")){
+                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                }else{
+                    disfrutantes=cuentaActual.getListaUnicoString();
+                }
+
+                Movimiento nuevoMovimiento=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
+                    dataSnapshot.child("concepto").getValue().toString(),
+                    dataSnapshot.child("Nombre").getValue().toString(),
+                    dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                    dataSnapshot.child("fecha").getValue().toString()
+                );
+
+                cuentaActual.addMovimiento(nuevoMovimiento);
+                actualizarInformacionCuenta();
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String disfrutantes;
+                if(dataSnapshot.hasChild("disfrutantes")){
+                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                }else{
+                    disfrutantes=cuentaActual.getListaUnicoString();
+                }
+
+                Movimiento movimientoModificado=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
+                        dataSnapshot.child("concepto").getValue().toString(),
+                        dataSnapshot.child("Nombre").getValue().toString(),
+                        dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                        dataSnapshot.child("fecha").getValue().toString()
+                );
+                cuentaActual.modificarMovimiento(movimientoModificado);
+
+                actualizarInformacionCuenta();
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                cuentaActual.quitarMovimiento(dataSnapshot.child("id").getValue().toString());
+                actualizarInformacionCuenta();
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+
+        /*
         cuentaActual.addLabel("titulo",labelTitulo);
         cuentaActual.addLabel("importePromedio",labelPromedio);
         cuentaActual.addLabel("importeTotal",labelImporteTotal);
         cuentaActual.addLabel("numeroPersonas",labelPersonas);
-
+*/
 
         /*labelTitulo.setText(cuentaActual.titulo);
         labelImporteTotal.setText(Double.toString( cuentaActual.importeTotal)+"€");
@@ -65,14 +165,16 @@ public class pant_principal_cuenta extends AppCompatActivity {
         labelImporteTotal.setText(cuentaActual.getImportePromedio()+" €/persona");
         */
 
-        recicler.setLayoutManager(new LinearLayoutManager(this));
 
-        //cuentaActual.setTextViews(labelTitulo,labelImporteTotal,labelPersonas,labelPromedio,recicler);
+        //cuentaActual.setRecycler(recicler);
+    }
 
-        AdaptadorPersonas adapter=new AdaptadorPersonas(cuentaActual.listaNombres,cuentaActual.getImportePromedio(),cuentaActual.id);
 
-        recicler.setAdapter(adapter);
-        cuentaActual.setRecycler(recicler);
+    public void actualizarInformacionCuenta()//para cada cambio en los movimientos, actualiza el importe total, el promedio
+    {
+        labelImporteTotal.setText(cuentaActual.getImporteTotal()+ " € total");
+        labelPromedio.setText(cuentaActual.getImportePromedio()+" € promedio");
+        recicler.getAdapter().notifyDataSetChanged();
     }
 
 
@@ -163,6 +265,8 @@ public class pant_principal_cuenta extends AppCompatActivity {
 
         intento.putExtra("numeroCuenta",cuentaActual.id);
         intento.putExtra("sonMovimientosPersona",false);
+        intento.putExtra("tituloCuenta",cuentaActual.titulo);
+        intento.putExtra("participantes",cuentaActual.getListaUnicoString());
 /*
 
         intento.putExtra("nombrePersona",cuentaActual.titulo);
@@ -173,7 +277,7 @@ public class pant_principal_cuenta extends AppCompatActivity {
        // intento.putExtra("cuenta",cuentaActual);
 
 
-        intento.putExtra("cuenta",cuentaActual.getCuentaSerializable());
+        //intento.putExtra("cuenta",cuentaActual.getCuentaSerializable());
 
         startActivity(intento);
 
