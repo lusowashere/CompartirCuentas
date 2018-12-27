@@ -19,10 +19,15 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
 
     ArrayList<Persona> listaPersonas;
     long numeroCuenta;
+    String tituloCuenta;
 
     public AdaptadorPersonas(ArrayList<Persona> listaPersonas, long nCuenta) {
         this.listaPersonas = listaPersonas;
         numeroCuenta=nCuenta;
+    }
+
+    public void setTituloCuenta(String tituloCuenta){
+        this.tituloCuenta=tituloCuenta;
     }
 
     @NonNull
@@ -63,6 +68,7 @@ public class AdaptadorPersonas extends RecyclerView.Adapter<AdaptadorPersonas.Vi
 
                 intento.putExtra("persona",listaPersonas.get(position).nombre);
                 intento.putExtra("participantes",getRistraNombres());
+                intento.putExtra("tituloCuenta",tituloCuenta);
 
                 v.getContext().startActivity(intento);
 

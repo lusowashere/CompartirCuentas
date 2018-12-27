@@ -64,6 +64,7 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
                 intento.putExtra("idCuenta",listaCuentas.get(position).id);
 
 
+
                 ((Activity) context).startActivityForResult(intento,3);
 
             }
@@ -81,6 +82,8 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
                 intento.putExtra("idCuenta",listaCuentas.get(position).id);
 
                 intento.putExtra("esNuevoGasto",true);
+                intento.putExtra("ristraNombres",listaCuentas.get(position).participantes);
+                intento.putExtra("tituloCuenta",listaCuentas.get(position).titulo);
 
 
                 ((Activity) context).startActivityForResult(intento,2);

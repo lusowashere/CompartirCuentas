@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.constraint.solver.widgets.Snapshot;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +17,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,6 +39,8 @@ public class formNuevoGasto extends AppCompatActivity {
     ArrayList<String> arrayNombres;
     String nombre;
     EditText txtBoxConcepto, txtBoxFecha,txtBoxImporte;
+    TextView textoTitulo;
+
     String idMovimiento;
     //Cuenta2 cuentaActual;
     Cuenta cuentaActual;
@@ -54,12 +58,12 @@ public class formNuevoGasto extends AppCompatActivity {
         txtBoxFecha=findViewById(R.id.editTextFecha);
         txtBoxImporte=findViewById(R.id.editTextImporte);
 
-        txtBoxFecha.setText(getStringFecha());
+
 
 
         Intent intento=getIntent();
 
-        TextView textoTitulo=findViewById(R.id.tituloCuenta);
+        textoTitulo=findViewById(R.id.tituloCuenta);
 
 
         esNuevoGasto=intento.getBooleanExtra("esNuevoGasto",true);
@@ -69,38 +73,90 @@ public class formNuevoGasto extends AppCompatActivity {
 
         if(esNuevoGasto){
             idMovimiento=crearIdConFecha();
+            txtBoxFecha.setText(getStringFecha());
         }else{
             idMovimiento=intento.getStringExtra("idMovimiento");
+            txtBoxConcepto.setText( intento.getStringExtra("concepto"));
+            txtBoxFecha.setText(intento.getStringExtra("fecha"));
+            txtBoxImporte.setText(String.format("%.2f",intento.getDoubleExtra("importe",0)));
+
+
+        }
+
+        textoTitulo.setText(intento.getStringExtra("tituloCuenta"));
+
+        String ristraNombres=intento.getStringExtra("ristraNombres");
+        arrayNombres=new ArrayList<>();
+
+        for(String n:      ristraNombres.split(";")){
+            //Log.e("mensaje","añadiendo nombre '"+n+"'");
+            arrayNombres.add(n);
+        }
+
+        nombre=arrayNombres.get(0);//entiendo que por defecto es el primero
+
+        comboBoxNombres=findViewById(R.id.spinnerNombres);
+
+        comboBoxNombres.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,arrayNombres));
+
+        //apunto el pagador
+        if(!esNuevoGasto){
+            String pagador=intento.getStringExtra("pagador");
+            comboBoxNombres.setSelection(arrayNombres.indexOf(pagador));
         }
 
 
+        cuentaActual =new Cuenta(numeroCuenta,textoTitulo.getText().toString(),"");
 
+        cuentaActual.setListaFromUnicoString(ristraNombres);
 
-        myRef=FirebaseDatabase.getInstance().getReference("listas").child(numeroCuenta.toString());
+        myRef=FirebaseDatabase.getInstance().getReference("listas");
 
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        myRef.child(numeroCuenta.toString()).child("movimientos").addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                cuentaActual=new Cuenta(numeroCuenta,dataSnapshot.child("titulo").getValue().toString()
-                        ,dataSnapshot.child("descripcion").getValue().toString());
-
-                cuentaActual.setListaFromUnicoString(dataSnapshot.child("participantes").getValue().toString());
-
-                for (DataSnapshot mov:dataSnapshot.child("movimientos").getChildren()) {
-                    //ver quienes son los disfrutantes
-                    String disfrutantes;
-                    if(mov.hasChild("disfrutantes")){
-                        disfrutantes=mov.child("disfrutantes").getValue().toString();
-                    }else{
-                        disfrutantes=dataSnapshot.child("participantes").getValue().toString();//si no se han definido, son todos
-                    }
-
-                    Movimiento nuevoMovimiento=new Movimiento(Double.parseDouble( mov.child("cantidad").getValue().toString())
-                            ,mov.child("concepto").getValue().toString(),mov.child("Nombre").getValue().toString()
-                            ,mov.child("id").getValue().toString(),disfrutantes,mov.child("fecha").getValue().toString());
-
-                    cuentaActual.addMovimiento(nuevoMovimiento);
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String disfrutantes;
+                if(dataSnapshot.hasChild("disfrutantes")){
+                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                }else{
+                    disfrutantes=cuentaActual.getListaUnicoString();
                 }
+
+                Movimiento nuevoMovimiento=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
+                        dataSnapshot.child("concepto").getValue().toString(),
+                        dataSnapshot.child("Nombre").getValue().toString(),
+                        dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                        dataSnapshot.child("fecha").getValue().toString()
+                );
+
+                cuentaActual.addMovimiento(nuevoMovimiento);
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String disfrutantes;
+                if(dataSnapshot.hasChild("disfrutantes")){
+                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                }else{
+                    disfrutantes=cuentaActual.getListaUnicoString();
+                }
+
+                Movimiento movimientoModificado=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
+                        dataSnapshot.child("concepto").getValue().toString(),
+                        dataSnapshot.child("Nombre").getValue().toString(),
+                        dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                        dataSnapshot.child("fecha").getValue().toString()
+                );
+                cuentaActual.modificarMovimiento(movimientoModificado);
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                cuentaActual.quitarMovimiento(dataSnapshot.child("id").getValue().toString());
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
             }
 
@@ -111,39 +167,6 @@ public class formNuevoGasto extends AppCompatActivity {
         });
 
 
-
-
-
-
-
-
-        //String ristraNombres=intento.getStringExtra("nombres");
-
-        //Log.e("mensaje","ristra nombres:'"+ristraNombres+"'");
-
-        String ristraNombres=cuentaActual.getListaUnicoString();
-
-        arrayNombres=new ArrayList<>();
-
-          for(String n:      ristraNombres.split(";")){
-              //Log.e("mensaje","añadiendo nombre '"+n+"'");
-              arrayNombres.add(n);
-          }
-
-          nombre=arrayNombres.get(0);//entiendo que por defecto es el primero
-
-        comboBoxNombres=findViewById(R.id.spinnerNombres);
-
-        comboBoxNombres.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,arrayNombres));
-
-      /*  comboBoxNombres.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                nombre=arrayNombres.get(position);
-            }
-        });*/
-
-
     }//fin de la función on create
 
 
@@ -152,61 +175,83 @@ public class formNuevoGasto extends AppCompatActivity {
         final String concepto;
         final Double importe;
         final String fecha;
+        final String pagador;
 
 
 
         concepto=txtBoxConcepto.getText().toString();
-        importe=Double.parseDouble(txtBoxImporte.getText().toString());
+
+        //validacion del importe
+        if(txtBoxImporte.getText()==null){
+            importe=0.0;
+        }else{
+            String stringImporte=txtBoxImporte.getText().toString();
+            stringImporte=stringImporte.replaceAll(",",".");
+            importe=Double.parseDouble(stringImporte);
+        }
+
         fecha=txtBoxFecha.getText().toString();
+        pagador=comboBoxNombres.getSelectedItem().toString();
+
+
 
         AlertDialog.Builder alerta=new AlertDialog.Builder(formNuevoGasto.this);
 
 
-        if(idMovimiento.equals(""))//es nuevo movimiento
+        if(esNuevoGasto)//es nuevo movimiento
         {
 
             alerta.setTitle("Apuntar nuevo gasto");
-            alerta.setMessage("¿Desea añadir un gasto de "+importe+"€ pagados por '"+comboBoxNombres.getSelectedItem().toString()+"' el día "+fecha+" con el concepto \""+concepto+"\"?");
+            alerta.setMessage("¿Desea añadir un gasto de "+importe+"€ pagados por '"+pagador+"' el día "+fecha+" con el concepto \""+concepto+"\"?");
 
-            alerta.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
 
-                    idMovimiento=crearIdConFecha();
 
-                    //por ahora pongo como disfrutantes a todos
-                    Movimiento nuevoMovimiento=new Movimiento(importe,concepto,comboBoxNombres.getSelectedItem().toString(),idMovimiento,cuentaActual.getListaUnicoString(),fecha);
+        }else{//es modificación del movimiento
+            alerta.setTitle("Modificar gasto");
+            alerta.setMessage("¿Desea modificar el movimiento para que sea un gasto de "+importe+"€ pagados por "+pagador+" el día "+fecha+" con el concepto \""+concepto+"\"?");
 
-                    myRef.child(Long.toString(numeroCuenta)).child("movimientos").child(idMovimiento).setValue(nuevoMovimiento);
+        }
 
+        alerta.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                Log.e("mensaje","Lista:"+cuentaActual.getListaUnicoString());
+
+                //por ahora pongo como disfrutantes a todos
+                Movimiento nuevoMovimiento=new Movimiento(importe,concepto,pagador,idMovimiento,cuentaActual.getListaUnicoString(),fecha);
+
+                myRef.child(Long.toString(numeroCuenta)).child("movimientos").child(idMovimiento).setValue(nuevoMovimiento.getInfoMovimiento());
+
+
+                if(esNuevoGasto) {
                     cuentaActual.addMovimiento(nuevoMovimiento);
+                }else{
+                    cuentaActual.modificarMovimiento(nuevoMovimiento);
+                }
 
 
-                    dialog.dismiss();
+                dialog.dismiss();
 
-                    Intent returnIntent=new Intent();
+                Intent returnIntent=new Intent();
 
-                    //cuentaActual.calcularImporteTotal(true);
-                    cuentaActual.guardarImporteTotal();
+                //cuentaActual.calcularImporteTotal(true);
+                cuentaActual.guardarImporteTotal();
 
 
-                    //recalcularYguardarImporteTotal();
+                //recalcularYguardarImporteTotal();
                     /*double nuevoImporte=cuentaTemp.importeTotal;
                     Log.e("mensaje","importe fuera de funcion:"+nuevoImporte+"€");
 
                     returnIntent.putExtra("nuevoImporteTotal", nuevoImporte);
                     returnIntent.putExtra("idCuenta",numeroCuenta);*/
 
-                    setResult(Activity.RESULT_OK, returnIntent);
+                setResult(Activity.RESULT_OK, returnIntent);
 
-                    finish();
-                }
-            });
+                finish();
+            }
+        });
 
-        }else{//es modificación del movimiento
-            alerta.setTitle("Modificar gasto");
-            alerta.setMessage("¿Desea modificar el movimiento para que sea un gasto de "+importe+"€ pagados por "+nombre+" el día "+fecha+" con el concepto \""+concepto+"\"?");
-        }
 
         alerta.setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override

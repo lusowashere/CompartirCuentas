@@ -27,8 +27,6 @@ class Cuenta implements Serializable {
     //public double importeTotal;
 
 
-    private FirebaseDatabase database;
-    private DatabaseReference myRef;
 
     /////CONSTRUCTORES
 
@@ -89,7 +87,7 @@ class Cuenta implements Serializable {
 
     public void guardarImporteTotal(){
 
-        myRef.child(Long.toString(id)).child("importeTotal").setValue(getImporteTotal());
+        FirebaseDatabase.getInstance().getReference("listas").child(Long.toString(id)).child("importeTotal").setValue(getImporteTotal());
     }
 
     public double getImporteTotal(){

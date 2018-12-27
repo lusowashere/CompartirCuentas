@@ -91,11 +91,14 @@ public class MainActivity extends AppCompatActivity {
                                     cuentas.titulo=dataSnapshot.child("titulo").getValue().toString();
                                     cuentas.descripcion=dataSnapshot.child("descripcion").getValue().toString();
                                     cuentas.importeTotal=Double.parseDouble( dataSnapshot.child("importeTotal").getValue().toString());
+                                    cuentas.participantes=dataSnapshot.child("participantes").getValue().toString();
                                 }
                             }
                             if(!cuentaExiste){//creamos la cuenta
                                 InformacionCuenta info=new InformacionCuenta(idCambiado,dataSnapshot.child("titulo").getValue().toString()
-                                        ,dataSnapshot.child("descripcion").getValue().toString(),Double.parseDouble( dataSnapshot.child("importeTotal").getValue().toString()));
+                                        ,dataSnapshot.child("descripcion").getValue().toString(),
+                                        Double.parseDouble( dataSnapshot.child("importeTotal").getValue().toString()),
+                                        dataSnapshot.child("participantes").getValue().toString());
                                 listaCuentasUsuario.add(info);
                             }
 
@@ -219,23 +222,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if(requestCode==2 && resultCode==Activity.RESULT_OK){//se ha añadido un movimiento
-            /*Log.e("mensaje","se ha cargado un nuevo movimientoooo");
-            leerListas();*/
-
-            //long idMovimientoModificado=data.getLongExtra("idCuenta",0);
-
-            /*
-
-            for(Cuenta c:listaCuentasUsuario){
-                if(idMovimientoModificado==c.id){
-
-                    recicler.getAdapter().notifyDataSetChanged();
-                }
-            }*/
-
-
-        }
 
         if(requestCode==3 && resultCode==Activity.RESULT_OK){//pantalla de resumen cuenta
             if(data.getBooleanExtra("cuentaOlvidadaEliminada",false)){

@@ -37,6 +37,8 @@ public class pant_principal_cuenta extends AppCompatActivity {
     TextView labelTitulo, labelImporteTotal, labelPersonas, labelPromedio;
     RecyclerView recicler;
 
+    AdaptadorPersonas adapter;
+
     DatabaseReference myRef;
 
     @Override
@@ -68,7 +70,7 @@ public class pant_principal_cuenta extends AppCompatActivity {
 
         recicler.setLayoutManager(new LinearLayoutManager(this));
         //cuentaActual.setTextViews(labelTitulo,labelImporteTotal,labelPersonas,labelPromedio,recicler);
-        AdaptadorPersonas adapter=new AdaptadorPersonas(cuentaActual.listaNombres,cuentaActual.id);
+         adapter=new AdaptadorPersonas(cuentaActual.listaNombres,cuentaActual.id);
         recicler.setAdapter(adapter);
 
         //listener inicial para  la información general
@@ -76,17 +78,23 @@ public class pant_principal_cuenta extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 cuentaActual.setTitulo(dataSnapshot.child("titulo").getValue().toString());
-                cuentaActual.setTitulo(dataSnapshot.child("descripcion").getValue().toString());
+                cuentaActual.setDescripcion(dataSnapshot.child("descripcion").getValue().toString());
                 cuentaActual.setListaFromUnicoString(dataSnapshot.child("participantes").getValue().toString());
 
                 labelTitulo.setText(cuentaActual.getTitulo());
                 labelPersonas.setText(cuentaActual.getNumeroPersonas()+" participantes");
+
+                adapter.setTituloCuenta(cuentaActual.getTitulo());
+
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
+
+
+
 
 
         //listener de los movimientos para definir a las personas

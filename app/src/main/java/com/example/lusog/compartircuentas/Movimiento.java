@@ -65,4 +65,8 @@ public class Movimiento implements Serializable {
         return loEs;
     }
 
+    public InformacionMovimiento getInfoMovimiento(){//para guardar en firebase
+        return new InformacionMovimiento(pagador,concepto,fecha,id,cantidad,disfrutantes);
+    }
+
 }

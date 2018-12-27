@@ -2,6 +2,7 @@ package com.example.lusog.compartircuentas;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,10 +17,13 @@ public class AdaptadorMovimientos extends RecyclerView.Adapter<AdaptadorMovimien
 
     ArrayList<Movimiento> listaMovimientos;
     long idCuenta;
+    String ristraParticipantes,tituloCuenta;
 
-    public AdaptadorMovimientos(ArrayList<Movimiento> listaMov,long idCuenta) {
+    public AdaptadorMovimientos(ArrayList<Movimiento> listaMov,long idCuenta, String ristraParticipantes,String tituloCuenta) {
         this.listaMovimientos = listaMov;
         this.idCuenta=idCuenta;
+        this.ristraParticipantes=ristraParticipantes;
+        this.tituloCuenta=tituloCuenta;
     }
 
     @NonNull
@@ -64,6 +68,27 @@ public class AdaptadorMovimientos extends RecyclerView.Adapter<AdaptadorMovimien
 
             }
         });
+
+        holder.buttEditar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intento=new Intent(v.getContext(),formNuevoGasto.class);
+                intento.putExtra("esNuevoGasto",false);
+                intento.putExtra("idCuenta",idCuenta);
+                intento.putExtra("idMovimiento",listaMovimientos.get(position).id);
+                intento.putExtra("concepto",listaMovimientos.get(position).concepto);
+                intento.putExtra("fecha",listaMovimientos.get(position).fecha);
+                intento.putExtra("importe",listaMovimientos.get(position).cantidad);
+                intento.putExtra("pagador",listaMovimientos.get(position).pagador);
+                intento.putExtra("disfrutantes",listaMovimientos.get(position).disfrutantes);
+                intento.putExtra("ristraNombres",ristraParticipantes);
+                intento.putExtra("tituloCuenta",tituloCuenta);
+
+                v.getContext().startActivity(intento);
+            }
+        });
+
+
 
     }
 

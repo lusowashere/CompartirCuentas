@@ -67,7 +67,7 @@ public class pant_ver_movimientos extends AppCompatActivity {
         recyclerMovimientos=findViewById(R.id.reciclerViewMovimientos);
 
 
-
+        tituloCuenta=intento.getStringExtra("tituloCuenta");
 
         if(sonMovimientosPersona){
             nombrePersona= intento.getStringExtra("persona");
@@ -85,13 +85,13 @@ public class pant_ver_movimientos extends AppCompatActivity {
             }
             */
         }else{
-            tituloCuenta=intento.getStringExtra("tituloCuenta");
             textoTitulo.setText(tituloCuenta);
             cuentaActual=new Cuenta(numeroCuenta,tituloCuenta,"");
-
         }
 
-        cuentaActual.setListaFromUnicoString(intento.getStringExtra("participantes"));
+        String participantes=intento.getStringExtra("participantes");
+
+        cuentaActual.setListaFromUnicoString(participantes);
 
 
         recyclerMovimientos.setLayoutManager(new  LinearLayoutManager(this));
@@ -99,10 +99,10 @@ public class pant_ver_movimientos extends AppCompatActivity {
         AdaptadorMovimientos adapter;
 
         if(sonMovimientosPersona) {
-            adapter = new AdaptadorMovimientos(listaMovimientos, numeroCuenta);
+            adapter = new AdaptadorMovimientos(listaMovimientos, numeroCuenta,participantes,tituloCuenta);
         }
         else{
-             adapter=new AdaptadorMovimientos(cuentaActual.movimientosCuenta,numeroCuenta);
+             adapter=new AdaptadorMovimientos(cuentaActual.movimientosCuenta,numeroCuenta,participantes,tituloCuenta);
         }
 
         recyclerMovimientos.setAdapter(adapter);
