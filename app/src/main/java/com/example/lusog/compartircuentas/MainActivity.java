@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                         AlertDialog.Builder alertaAdded=new AlertDialog.Builder(contexto1);
 
                         if(dataSnapshot.hasChild(Long.toString( numeroCuentaNuevo))){
-                            alertaAdded.setMessage("Cuenta con id '"+numeroCuentaNuevo+"' añadida");
+                            //alertaAdded.setMessage("Cuenta con id '"+numeroCuentaNuevo+"' añadida");
                             add_ID_a_cuentas(numeroCuentaNuevo);
                         }else{
 
@@ -291,6 +291,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //leerListas();
+
+        //recargo la actividad
+        finish();
+        startActivity(getIntent());
 
     }
 }
