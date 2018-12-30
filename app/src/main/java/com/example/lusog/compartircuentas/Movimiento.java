@@ -8,21 +8,27 @@ public class Movimiento implements Serializable {
     public double cantidad;
     public String concepto, pagador, id,disfrutantes;
     public String fecha;
+    public boolean sonTodosDisfrutantes;
 
-    public Movimiento(double cantidad, String concepto, String pagador, String id, String disfrutantes, String fecha) {
+    public Movimiento(double cantidad, String concepto, String pagador, String id, String fecha) {
         this.cantidad = cantidad;
         this.concepto = concepto;
         this.pagador = pagador;
         this.id = id;
-        this.disfrutantes = disfrutantes;
         this.fecha = fecha;
+        this.sonTodosDisfrutantes=true;
+        this.disfrutantes = "";
     }
 
-    /*//constructor necesario para las llamadas de firebase
-    public Movimiento(){
+    public Movimiento(double cantidad, String concepto, String pagador, String id, String disfrutantes, String fecha) {
+        this(cantidad,concepto,pagador,id,fecha);
+        this.sonTodosDisfrutantes=false;
+        this.disfrutantes=disfrutantes;
+    }
 
-    }*/
-
+    public void setSonTodosDisfrutantes(boolean sonTodosDisfrutantes) {
+        this.sonTodosDisfrutantes = sonTodosDisfrutantes;
+    }
 
     public String toString(){
         return "Cantidad:"+cantidad+"€ concepto:'"+concepto+"' pagador:'"+pagador+"' fecha:"+fecha+" id:"+id;
@@ -57,6 +63,7 @@ public class Movimiento implements Serializable {
     }
 
     public boolean esDisfrutante(String nombre){
+        if()
         boolean loEs=false;
         for(String disf:getListaDisfrutantes()){
             if(nombre.equals(disf)){loEs=true;}
