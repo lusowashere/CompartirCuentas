@@ -15,6 +15,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 
 class Cuenta implements Serializable {
@@ -26,7 +28,7 @@ class Cuenta implements Serializable {
     public ArrayList<Movimiento> movimientosCuenta;
     //public double importeTotal;
 
-
+    public ArrayList<Movimiento> ajustesCuenta;
 
     /////CONSTRUCTORES
 
@@ -127,6 +129,17 @@ class Cuenta implements Serializable {
 
 
         return idPropuesto;
+
+    }
+
+    public long crearIdMovimientoConFecha(){
+        long idPropuesto=crearIdConFecha();
+        Calendar ahora;
+        ahora=Calendar.getInstance();
+
+        idPropuesto=idPropuesto*100+ahora.get(Calendar.SECOND);
+
+        return  idPropuesto;
 
     }
 
@@ -250,6 +263,87 @@ class Cuenta implements Serializable {
 
         return new Persona("");
 
+    }
+
+    public void ajustarCuentas(){//crea una serie de movimientos con los cuales se ajustarían las cuentas
+        ajustesCuenta=new ArrayList<>();
+
+        ArrayList<Persona> personasAux=new ArrayList<>();
+
+
+        for(Persona p:listaNombres){
+            //creamos una nueva persona, y en lugar de lo pagado ponemos la deuda
+            Persona copiaPersona=new Persona(p.nombre);
+            copiaPersona.totalPagado=p.getDeuda();
+            personasAux.add(copiaPersona);
+        }
+
+
+        int deudasDistintasDeCero=personasAux.size();
+
+
+        int contadorTemporal=0;
+
+        while(deudasDistintasDeCero>1 && contadorTemporal<30) {
+            contadorTemporal++;
+            Collections.sort(personasAux, new Comparator<Persona>() {
+                @Override
+                public int compare(Persona o1, Persona o2) {
+                    return o1.totalPagado.compareTo(o2.totalPagado);
+                }
+            });
+
+           /*Log.e("ajustes", "orden tras lista");
+            for (Persona temp : personasAux) {
+                Log.e("ajustes", "Nombre:" + temp.nombre + "  -  Deuda:" + temp.totalPagado);
+            }*/
+
+            //siempre intento que el que más debe pague al que más se le debe
+            Double totalDelDeudor=personasAux.get(personasAux.size()-1).totalPagado;
+            Double totalDelDebido=personasAux.get(0).totalPagado;
+
+            Double cantidadPagada=Math.min(Math.abs( totalDelDeudor),Math.abs(totalDelDebido));//como mucho pago o lo que debe uno o lo que se le debe al otro
+
+            //creo el movimiento y lo añado a la lista
+            //Log.e("ajustes",personasAux.get(personasAux.size()-1).nombre+" paga "+cantidadPagada+"€ a "+personasAux.get(0).nombre);
+            Movimiento nuevoMovimiento=new Movimiento(cantidadPagada,
+                    "ajuste"+contadorTemporal,
+                    personasAux.get(personasAux.size()-1).nombre,
+                    "ajuste-"+crearIdMovimientoConFecha()+contadorTemporal,
+                    personasAux.get(0).nombre,
+                    getStringFecha()
+            );
+
+            ajustesCuenta.add(nuevoMovimiento);
+
+            //recalculo
+            personasAux.get(personasAux.size()-1).totalPagado-=cantidadPagada;
+            personasAux.get(0).totalPagado+=cantidadPagada;
+
+
+
+            //compruebo si se han ajustado las cuentas
+            deudasDistintasDeCero=0;
+            for(Persona comprobarPersona:personasAux){
+                if(comprobarPersona.totalPagado!=0){
+                    deudasDistintasDeCero++;
+                }
+            }
+
+        }
+    }
+
+    public String getStringFecha(){
+        String stringFecha;
+
+        Calendar ahora;
+        ahora=Calendar.getInstance();
+
+        stringFecha =Integer.toString( ahora.get(Calendar.DAY_OF_MONTH));
+        stringFecha+="/"+(ahora.get(Calendar.MONTH)+1);
+        stringFecha+="/"+ahora.get(Calendar.YEAR);
+
+        return stringFecha;
     }
 
 }

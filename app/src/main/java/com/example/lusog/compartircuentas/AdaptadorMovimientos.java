@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
 
 public class AdaptadorMovimientos extends RecyclerView.Adapter<AdaptadorMovimientos.ViewHolderCuentas> {
@@ -53,6 +55,9 @@ public class AdaptadorMovimientos extends RecyclerView.Adapter<AdaptadorMovimien
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //hay que eliminarlo
+
+                        FirebaseDatabase.getInstance().getReference("listas").child( Long.toString(idCuenta)).child("movimientos").child(listaMovimientos.get(position).id).setValue(null);
+
                         dialog.dismiss();
                     }
                 });

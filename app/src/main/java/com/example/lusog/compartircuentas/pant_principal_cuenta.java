@@ -205,11 +205,27 @@ public class pant_principal_cuenta extends AppCompatActivity {
             case R.id.idButtOlvidarCuenta:
                 olvidarCuenta();
                 break;
+            case R.id.idButtCambiarConfiguracion:
+                modificarCuenta();
+                break;
 
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void modificarCuenta(){
+        Intent intento=new Intent(getApplicationContext(),detalles_cuenta.class);
+        intento.putExtra("esNuevaCuenta",false);
+        intento.putExtra("idCuenta",cuentaActual.id);
+        intento.putExtra("tituloCuenta",cuentaActual.titulo);
+        intento.putExtra("descripcionCuenta",cuentaActual.descripcion);
+        intento.putExtra("participantes",cuentaActual.getListaUnicoString());
+
+        getApplicationContext().startActivity(intento);
+
+    }
+
 
     private void olvidarCuenta() {//la cuenta sigue existiendo, pero ya no se verá en la lista del usuario
 
@@ -319,9 +335,36 @@ public class pant_principal_cuenta extends AppCompatActivity {
 
 
 
+    public void calcularAjustesCuenta(View view){
+        cuentaActual.ajustarCuentas();
+
+        Intent intento=new Intent(getApplicationContext(),Pant_Ajustar_Cuentas.class);
+
+        intento.putExtra("tituloCuenta",cuentaActual.titulo);
+        intento.putExtra("idCuenta",cuentaActual.id);
+        intento.putExtra("numeroAjustes",cuentaActual.ajustesCuenta.size());
+
+        int i=0;
+        for(Movimiento ajuste:cuentaActual.ajustesCuenta){
+            intento.putExtra("ajuste"+i,cuentaActual.ajustesCuenta.get(i));
+            i++;
+        }
+
+        getApplicationContext().startActivity(intento);
+
+    }
 
 
+    public void crearNuevoMovimiento(View view){
+        Intent intento=new Intent(getApplicationContext(),formNuevoGasto.class);
 
+        intento.putExtra("idCuenta",cuentaActual.id);
 
+        intento.putExtra("esNuevoGasto",true);
+        intento.putExtra("ristraNombres",cuentaActual.getListaUnicoString());
+        intento.putExtra("tituloCuenta",cuentaActual.titulo);
+
+        getApplicationContext().startActivity(intento);
+    }
 
 }

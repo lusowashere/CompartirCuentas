@@ -18,10 +18,10 @@ public class Movimiento implements Serializable {
         this.fecha = fecha;
     }
 
-    //constructor necesario para las llamadas de firebase
+    /*//constructor necesario para las llamadas de firebase
     public Movimiento(){
 
-    }
+    }*/
 
 
     public String toString(){
@@ -66,7 +66,7 @@ public class Movimiento implements Serializable {
     }
 
     public InformacionMovimiento getInfoMovimiento(){//para guardar en firebase
-        return new InformacionMovimiento(pagador,concepto,fecha,id,cantidad,disfrutantes);
+        return new InformacionMovimiento(pagador,concepto,fecha,id,cantidad/*,disfrutantes*/);
     }
 
 }

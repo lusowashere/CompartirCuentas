@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Compartir Cuentas</string>
     <string name="title_activity_resumen_cuenta">Cuenta</string>
+    <string name="texto_version">Luso Was Here - V2.0 - 28/12/2018</string>
 </resources>

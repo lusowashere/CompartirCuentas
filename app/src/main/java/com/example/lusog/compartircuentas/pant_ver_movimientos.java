@@ -182,6 +182,9 @@ public class pant_ver_movimientos extends AppCompatActivity {
 
                 actualizarInformacion();
 
+                //aquí además actualizamos el importe total porque si no se queda incorrecto
+                cuentaActual.guardarImporteTotal();
+
             }
 
             @Override

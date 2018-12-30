@@ -21,6 +21,8 @@ public class detalles_cuenta extends AppCompatActivity {
     public FirebaseDatabase database;
     public DatabaseReference myRef;
 
+    EditText txtboxTitulo,txtBoxDescripcion;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +34,8 @@ public class detalles_cuenta extends AppCompatActivity {
 
         TextView texto=(TextView) findViewById(R.id.labelCabecera);
         Button botonSalida=(Button) findViewById(R.id.buttExit);
+        txtboxTitulo=(EditText) findViewById(R.id.txtBoxTitulo);
+        txtBoxDescripcion=(EditText) findViewById(R.id.txtboxDescripcion);
 
         database=FirebaseDatabase.getInstance();
         myRef=database.getReference("listas");
@@ -42,6 +46,17 @@ public class detalles_cuenta extends AppCompatActivity {
 
             cuentaActual=new Cuenta("Prueba","Pruebaaa");
             Log.e("Mensaje","Id:"+cuentaActual.id);
+        }else{
+            cuentaActual=new Cuenta(intento.getLongExtra("idCuenta",0),
+                    intento.getStringExtra("tituloCuenta"),
+                    intento.getStringExtra("descripcionCuenta"));
+            cuentaActual.setListaFromUnicoString(intento.getStringExtra("participantes"));
+            actualizarListaNombres(intento.getStringExtra("participantes"));
+            texto.setText("modificar " + cuentaActual.titulo);
+            botonSalida.setText("modificar la cuenta");
+            txtboxTitulo.setText(cuentaActual.titulo);
+            txtBoxDescripcion.setText(cuentaActual.descripcion);
+
         }
 
     }
@@ -55,26 +70,31 @@ public class detalles_cuenta extends AppCompatActivity {
 
     }
 
+    public void actualizarListaNombres(String listaNombres){
+        String texto2="";
+        TextView nombres=(TextView) findViewById(R.id.textoListaParticipantes);
+        int i=0;
+        String[] arrayTexto=listaNombres.split(";");
+        for(String n:arrayTexto){
+            if(i>0){
+                texto2+="\n";
+            }
+            texto2+=n;
+            i++;
+        }
+        nombres.setText(texto2);
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode==1 && resultCode== Activity.RESULT_OK){
-            TextView nombres=(TextView) findViewById(R.id.textoListaParticipantes);
+
             String stringDevuelto=data.getStringExtra("stringListaNombres");
 
-            String texto2="";
-            int i=0;
-            String[] arrayTexto=stringDevuelto.split(";");
-            for(String n:arrayTexto){
-                if(i>0){
-                    texto2+="\n";
-                }
-                texto2+=n;
-                i++;
-            }
-            nombres.setText(texto2);
+            actualizarListaNombres(stringDevuelto);
 
             cuentaActual.setListaFromUnicoString(stringDevuelto);
 
@@ -86,10 +106,11 @@ public class detalles_cuenta extends AppCompatActivity {
 
     public void BotonSalida_Click(View view){
 
-        EditText txtboxTitulo=(EditText) findViewById(R.id.txtBoxTitulo);
+
         //EditText txtboxDescripcion=(EditText)
 
         cuentaActual.titulo=txtboxTitulo.getText().toString();
+        cuentaActual.descripcion=txtBoxDescripcion.getText().toString();
 
 
         Intent returnIntent=new Intent();

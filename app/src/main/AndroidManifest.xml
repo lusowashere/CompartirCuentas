@@ -36,7 +36,8 @@
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".formNuevoGasto" />
         <activity android:name=".pant_principal_cuenta" />
-        <activity android:name=".pant_ver_movimientos"></activity>
+        <activity android:name=".pant_ver_movimientos" />
+        <activity android:name=".Pant_Ajustar_Cuentas"></activity>
     </application>
 
 </manifest>

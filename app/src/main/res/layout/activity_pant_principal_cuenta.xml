@@ -10,7 +10,7 @@
         android:id="@+id/labelTitulo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="2dp"
         android:text="Título"
         android:textAlignment="center"
         android:textSize="18sp"
@@ -28,12 +28,13 @@
         android:text="CosteTotal"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/labelTitulo" />
+        app:layout_constraintTop_toBottomOf="@+id/labelNumeroPersonas" />
 
     <TextView
         android:id="@+id/labelNumeroPersonas"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
         android:text="x personas"
         android:textAlignment="center"
         app:layout_constraintEnd_toStartOf="@+id/labelPromedio"
@@ -49,7 +50,7 @@
         android:text="x €/persona"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/labelTitulo" />
+        app:layout_constraintTop_toBottomOf="@+id/labelNumeroPersonas" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerViewNombres"
@@ -68,28 +69,42 @@
 
     <Button
         android:id="@+id/buttVerMovimientos"
-        android:layout_width="150dp"
-        android:layout_height="75dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginBottom="8dp"
         android:onClick="verMovimientosCuenta"
-        android:text="ver movimientos"
+        android:text="VER\nMOVIMIENTOS"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/buttAjustarCuentas"
-        android:layout_width="202dp"
-        android:layout_height="73dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
-        android:text="Ajustar cuentas"
+        android:onClick="calcularAjustesCuenta"
+        android:text="AJUSTAR\nCUENTAS"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/buttVerMovimientos" />
+
+    <Button
+        android:id="@+id/buttAddMovimiento"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="8dp"
+        android:onClick="crearNuevoMovimiento"
+        android:text="Añadir\nMovimiento"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/buttAjustarCuentas"
         app:layout_constraintStart_toEndOf="@+id/buttVerMovimientos"
         app:layout_constraintTop_toTopOf="@+id/buttVerMovimientos" />
 </android.support.constraint.ConstraintLayout>

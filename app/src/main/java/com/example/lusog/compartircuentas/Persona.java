@@ -43,4 +43,6 @@ public class Persona implements Serializable {
             return "Se le deben "+String.format("%.2f",(-getDeuda()))+"€";
         }
     }
+
+
 }

@@ -85,8 +85,8 @@ public class adaptadorCuentas extends RecyclerView.Adapter<adaptadorCuentas.View
                 intento.putExtra("ristraNombres",listaCuentas.get(position).participantes);
                 intento.putExtra("tituloCuenta",listaCuentas.get(position).titulo);
 
-
-                ((Activity) context).startActivityForResult(intento,2);
+                v.getContext().startActivity(intento);
+                //((Activity) context).startActivityForResult(intento,2);
 
             }
         });
