@@ -9,10 +9,15 @@ import android.support.constraint.solver.widgets.Snapshot;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -40,6 +45,11 @@ public class formNuevoGasto extends AppCompatActivity {
     String nombre;
     EditText txtBoxConcepto, txtBoxFecha,txtBoxImporte;
     TextView textoTitulo;
+    CheckBox checkBoxSonTodosDisfrutantes;
+    RecyclerView recyclerPosiblesDisfrutantes;
+    Button botonApuntar;
+
+    ArrayList<PosibleDisfrutante> listaPosiblesDisfrutantes;
 
     String idMovimiento;
     //Cuenta2 cuentaActual;
@@ -57,40 +67,47 @@ public class formNuevoGasto extends AppCompatActivity {
         txtBoxConcepto=findViewById(R.id.editTextConcepto);
         txtBoxFecha=findViewById(R.id.editTextFecha);
         txtBoxImporte=findViewById(R.id.editTextImporte);
-
-
+        textoTitulo=findViewById(R.id.tituloCuenta);
+        botonApuntar=findViewById(R.id.buttonApuntarGasto);
 
 
         Intent intento=getIntent();
 
-        textoTitulo=findViewById(R.id.tituloCuenta);
+
 
 
         esNuevoGasto=intento.getBooleanExtra("esNuevoGasto",true);
 
         numeroCuenta=intento.getLongExtra("idCuenta",0);
 
+        checkBoxSonTodosDisfrutantes=(CheckBox) findViewById(R.id.checkBoxSonTodosDisfrutantes);
+
 
         if(esNuevoGasto){
             idMovimiento=crearIdConFecha();
             txtBoxFecha.setText(getStringFecha());
+            textoTitulo.setText(intento.getStringExtra("tituloCuenta") + " - Nuevo Gasto");
+            botonApuntar.setText("Apuntar gasto");
+
         }else{
             idMovimiento=intento.getStringExtra("idMovimiento");
             txtBoxConcepto.setText( intento.getStringExtra("concepto"));
             txtBoxFecha.setText(intento.getStringExtra("fecha"));
             txtBoxImporte.setText(String.format("%.2f",intento.getDoubleExtra("importe",0)));
-
-
+            textoTitulo.setText(intento.getStringExtra("tituloCuenta") + " - Modificar Gasto");
+            botonApuntar.setText("Modificar gasto");
         }
 
-        textoTitulo.setText(intento.getStringExtra("tituloCuenta"));
+
 
         String ristraNombres=intento.getStringExtra("ristraNombres");
         arrayNombres=new ArrayList<>();
+        listaPosiblesDisfrutantes=new ArrayList<>();
 
         for(String n:      ristraNombres.split(";")){
             //Log.e("mensaje","añadiendo nombre '"+n+"'");
             arrayNombres.add(n);
+            listaPosiblesDisfrutantes.add(new PosibleDisfrutante(n));
         }
 
         nombre=arrayNombres.get(0);//entiendo que por defecto es el primero
@@ -106,6 +123,49 @@ public class formNuevoGasto extends AppCompatActivity {
         }
 
 
+        //recicler de los posibles disfrutantes
+        recyclerPosiblesDisfrutantes=(RecyclerView) findViewById(R.id.recyclerPosiblesDisfrutantes);
+        recyclerPosiblesDisfrutantes.setLayoutManager(new LinearLayoutManager(this));
+        AdaptadorPosiblesDisfrutantes adapter=new AdaptadorPosiblesDisfrutantes(listaPosiblesDisfrutantes);
+        recyclerPosiblesDisfrutantes.setAdapter(adapter);
+
+
+
+        if(esNuevoGasto){
+            checkBoxSonTodosDisfrutantes.setChecked(true);
+            recyclerPosiblesDisfrutantes.setVisibility(View.INVISIBLE);
+        }else{
+            if (intento.getBooleanExtra("sonTodosDisfrutantes", true)) {
+                checkBoxSonTodosDisfrutantes.setChecked(true);
+                recyclerPosiblesDisfrutantes.setVisibility(View.INVISIBLE);
+            }else{
+                checkBoxSonTodosDisfrutantes.setChecked(false);
+                recyclerPosiblesDisfrutantes.setVisibility(View.VISIBLE);
+                String disfrutantes=intento.getStringExtra("disfrutantes");
+                for(String disfrutante:disfrutantes.split(";")){
+                    for(PosibleDisfrutante p:listaPosiblesDisfrutantes){
+                        if(disfrutante.equals(p.nombre)){
+                            p.esDisfrutante=true;
+                        }
+                    }
+                }
+                recyclerPosiblesDisfrutantes.getAdapter().notifyDataSetChanged();
+            }
+        }
+
+
+        checkBoxSonTodosDisfrutantes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    recyclerPosiblesDisfrutantes.setVisibility(View.INVISIBLE);
+                }else{
+                    recyclerPosiblesDisfrutantes.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+
         cuentaActual =new Cuenta(numeroCuenta,textoTitulo.getText().toString(),"");
 
         cuentaActual.setListaFromUnicoString(ristraNombres);
@@ -116,16 +176,23 @@ public class formNuevoGasto extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 String disfrutantes;
-                if(dataSnapshot.hasChild("disfrutantes")){
-                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                boolean sonTodosDisfrutantes;
+
+                if(dataSnapshot.hasChild("sonTodosDisfrutantes")){
+                    sonTodosDisfrutantes=(boolean) dataSnapshot.child("sonTodosDisfrutantes").getValue();
                 }else{
-                    disfrutantes=cuentaActual.getListaUnicoString();
+                    sonTodosDisfrutantes=true;//desestimo la posibilidad de que no lo sean todos
                 }
 
+                if(sonTodosDisfrutantes){
+                    disfrutantes=cuentaActual.getListaUnicoString();
+                }else{
+                    disfrutantes=dataSnapshot.child("participantes").getValue().toString();
+                }
                 Movimiento nuevoMovimiento=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
                         dataSnapshot.child("concepto").getValue().toString(),
                         dataSnapshot.child("Nombre").getValue().toString(),
-                        dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                        dataSnapshot.child("id").getValue().toString(),sonTodosDisfrutantes,disfrutantes,
                         dataSnapshot.child("fecha").getValue().toString()
                 );
 
@@ -135,16 +202,24 @@ public class formNuevoGasto extends AppCompatActivity {
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 String disfrutantes;
-                if(dataSnapshot.hasChild("disfrutantes")){
-                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                boolean sonTodosDisfrutantes;
+
+                if(dataSnapshot.hasChild("sonTodosDisfrutantes")){
+                    sonTodosDisfrutantes=(boolean) dataSnapshot.child("sonTodosDisfrutantes").getValue();
                 }else{
+                    sonTodosDisfrutantes=true;//desestimo la posibilidad de que no lo sean todos
+                }
+
+                if(sonTodosDisfrutantes){
                     disfrutantes=cuentaActual.getListaUnicoString();
+                }else{
+                    disfrutantes=dataSnapshot.child("participantes").getValue().toString();
                 }
 
                 Movimiento movimientoModificado=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
                         dataSnapshot.child("concepto").getValue().toString(),
                         dataSnapshot.child("Nombre").getValue().toString(),
-                        dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                        dataSnapshot.child("id").getValue().toString(),sonTodosDisfrutantes,disfrutantes,
                         dataSnapshot.child("fecha").getValue().toString()
                 );
                 cuentaActual.modificarMovimiento(movimientoModificado);
@@ -176,8 +251,8 @@ public class formNuevoGasto extends AppCompatActivity {
         final Double importe;
         final String fecha;
         final String pagador;
-
-
+        final boolean sonTodosDisfrutantes;
+        final String disfrutantes;
 
         concepto=txtBoxConcepto.getText().toString();
 
@@ -192,8 +267,20 @@ public class formNuevoGasto extends AppCompatActivity {
 
         fecha=txtBoxFecha.getText().toString();
         pagador=comboBoxNombres.getSelectedItem().toString();
+        sonTodosDisfrutantes=checkBoxSonTodosDisfrutantes.isChecked();
+        String aux="";
+        if(!sonTodosDisfrutantes){
+            for(PosibleDisfrutante p:listaPosiblesDisfrutantes){
+                if(p.esDisfrutante){//lo añado a la lista
+                    if(aux!=""){
+                        aux+= ";";
+                    }
+                    aux+=p.nombre;
+                }
+            }
+        }
 
-
+        disfrutantes=aux;
 
         AlertDialog.Builder alerta=new AlertDialog.Builder(formNuevoGasto.this);
 
@@ -219,7 +306,7 @@ public class formNuevoGasto extends AppCompatActivity {
                 Log.e("mensaje","Lista:"+cuentaActual.getListaUnicoString());
 
                 //por ahora pongo como disfrutantes a todos
-                Movimiento nuevoMovimiento=new Movimiento(importe,concepto,pagador,idMovimiento,cuentaActual.getListaUnicoString(),fecha);
+                Movimiento nuevoMovimiento=new Movimiento(importe,concepto,pagador,idMovimiento,sonTodosDisfrutantes,disfrutantes,fecha);
 
                 myRef.child(Long.toString(numeroCuenta)).child("movimientos").child(idMovimiento).setValue(nuevoMovimiento.getInfoMovimiento());
 
@@ -235,16 +322,10 @@ public class formNuevoGasto extends AppCompatActivity {
 
                 Intent returnIntent=new Intent();
 
-                //cuentaActual.calcularImporteTotal(true);
+
                 cuentaActual.guardarImporteTotal();
 
 
-                //recalcularYguardarImporteTotal();
-                    /*double nuevoImporte=cuentaTemp.importeTotal;
-                    Log.e("mensaje","importe fuera de funcion:"+nuevoImporte+"€");
-
-                    returnIntent.putExtra("nuevoImporteTotal", nuevoImporte);
-                    returnIntent.putExtra("idCuenta",numeroCuenta);*/
 
                 setResult(Activity.RESULT_OK, returnIntent);
 

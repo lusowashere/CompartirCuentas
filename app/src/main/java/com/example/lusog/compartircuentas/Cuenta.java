@@ -309,7 +309,7 @@ class Cuenta implements Serializable {
             Movimiento nuevoMovimiento=new Movimiento(cantidadPagada,
                     "ajuste"+contadorTemporal,
                     personasAux.get(personasAux.size()-1).nombre,
-                    "ajuste-"+crearIdMovimientoConFecha()+contadorTemporal,
+                    "ajuste-"+crearIdMovimientoConFecha()+contadorTemporal,false,
                     personasAux.get(0).nombre,
                     getStringFecha()
             );

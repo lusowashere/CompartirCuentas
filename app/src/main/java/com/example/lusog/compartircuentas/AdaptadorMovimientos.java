@@ -88,6 +88,7 @@ public class AdaptadorMovimientos extends RecyclerView.Adapter<AdaptadorMovimien
                 intento.putExtra("disfrutantes",listaMovimientos.get(position).disfrutantes);
                 intento.putExtra("ristraNombres",ristraParticipantes);
                 intento.putExtra("tituloCuenta",tituloCuenta);
+                intento.putExtra("sonTodosDisfrutantes",listaMovimientos.get(position).sonTodosDisfrutantes);
 
                 v.getContext().startActivity(intento);
             }

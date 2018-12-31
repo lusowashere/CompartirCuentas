@@ -111,16 +111,23 @@ public class pant_ver_movimientos extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 String disfrutantes;
-                if(dataSnapshot.hasChild("disfrutantes")){
-                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                boolean sonTodosDisfrutantes;
+
+                if(dataSnapshot.hasChild("sonTodosDisfrutantes")){
+                    sonTodosDisfrutantes=(boolean) dataSnapshot.child("sonTodosDisfrutantes").getValue();
                 }else{
-                    disfrutantes=cuentaActual.getListaUnicoString();
+                    sonTodosDisfrutantes=true;//desestimo la posibilidad de que no lo sean todos
                 }
 
+                if(sonTodosDisfrutantes){
+                    disfrutantes=cuentaActual.getListaUnicoString();
+                }else{
+                    disfrutantes=dataSnapshot.child("participantes").getValue().toString();
+                }
                 Movimiento nuevoMovimiento=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
                         dataSnapshot.child("concepto").getValue().toString(),
                         dataSnapshot.child("Nombre").getValue().toString(),
-                        dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                        dataSnapshot.child("id").getValue().toString(),sonTodosDisfrutantes,disfrutantes,
                         dataSnapshot.child("fecha").getValue().toString()
                 );
 
@@ -137,16 +144,24 @@ public class pant_ver_movimientos extends AppCompatActivity {
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 String disfrutantes;
-                if(dataSnapshot.hasChild("disfrutantes")){
-                    disfrutantes=dataSnapshot.child("disfrutantes").getValue().toString();
+                boolean sonTodosDisfrutantes;
+
+                if(dataSnapshot.hasChild("sonTodosDisfrutantes")){
+                    sonTodosDisfrutantes=(boolean) dataSnapshot.child("sonTodosDisfrutantes").getValue();
                 }else{
+                    sonTodosDisfrutantes=true;//desestimo la posibilidad de que no lo sean todos
+                }
+
+                if(sonTodosDisfrutantes){
                     disfrutantes=cuentaActual.getListaUnicoString();
+                }else{
+                    disfrutantes=dataSnapshot.child("participantes").getValue().toString();
                 }
 
                 Movimiento movimientoModificado=new Movimiento(Double.parseDouble( dataSnapshot.child("cantidad").getValue().toString()),
                         dataSnapshot.child("concepto").getValue().toString(),
                         dataSnapshot.child("Nombre").getValue().toString(),
-                        dataSnapshot.child("id").getValue().toString(),disfrutantes,
+                        dataSnapshot.child("id").getValue().toString(),sonTodosDisfrutantes,disfrutantes,
                         dataSnapshot.child("fecha").getValue().toString()
                 );
 

@@ -8,12 +8,14 @@ public class Movimiento implements Serializable {
     public double cantidad;
     public String concepto, pagador, id,disfrutantes;
     public String fecha;
+    public boolean sonTodosDisfrutantes;
 
-    public Movimiento(double cantidad, String concepto, String pagador, String id, String disfrutantes, String fecha) {
+    public Movimiento(double cantidad, String concepto, String pagador, String id, boolean sonTodosDisfrutantes,String disfrutantes, String fecha) {
         this.cantidad = cantidad;
         this.concepto = concepto;
         this.pagador = pagador;
         this.id = id;
+        this.sonTodosDisfrutantes=sonTodosDisfrutantes;
         this.disfrutantes = disfrutantes;
         this.fecha = fecha;
     }
@@ -35,6 +37,7 @@ public class Movimiento implements Serializable {
         id=otroMov.id;
         fecha=otroMov.fecha;
         disfrutantes=otroMov.disfrutantes;
+        sonTodosDisfrutantes=otroMov.sonTodosDisfrutantes;
     }
 
 
@@ -66,7 +69,7 @@ public class Movimiento implements Serializable {
     }
 
     public InformacionMovimiento getInfoMovimiento(){//para guardar en firebase
-        return new InformacionMovimiento(pagador,concepto,fecha,id,cantidad/*,disfrutantes*/);
+        return new InformacionMovimiento(pagador,concepto,fecha,id,cantidad,sonTodosDisfrutantes,disfrutantes);
     }
 
 }
